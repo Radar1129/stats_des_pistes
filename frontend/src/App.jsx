@@ -1,0 +1,313 @@
+import { useState, useEffect } from 'react'
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
+import './App.css'
+
+const API_BASE_URL = 'http://127.0.0.1:8000';
+
+const getPlaneIcon = (cap) => {
+  const rotation = (cap || 0) - 45;
+  return new L.DivIcon({
+    html: `<div style="font-size: 20px; line-height: 1; text-shadow: 2px 2px 4px rgba(0,0,0,0.4); transform: rotate(${rotation}deg); transform-origin: center;">✈️</div>`,
+    className: 'custom-plane-icon', 
+    iconSize: [20, 20],
+    iconAnchor: [10, 10]
+  });
+};
+
+const axePiste0523 = [[44.730, -0.850], [44.828, -0.715], [44.910, -0.600]];
+const axePiste1129 = [[44.860, -0.780], [44.828, -0.715], [44.790, -0.640]];
+
+function App() {
+  // --- SYSTÈME D'AUTHENTIFICATION ---
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    // Vérifie si l'utilisateur s'est déjà connecté auparavant
+    return localStorage.getItem('radar_token') !== null;
+  });
+  const [usernameInput, setUsernameInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
+  const [loginError, setLoginError] = useState('');
+
+  // --- ÉTATS DU RADAR ---
+  const [vols, setVols] = useState([])
+  const [stats, setStats] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [periode, setPeriode] = useState('jour')
+  const [historiqueStats, setHistoriqueStats] = useState({ total: 0, axes: {}, pistes: {} })
+
+  // Fonction de validation du login
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setLoginError('');
+    
+    fetch(`${API_BASE_URL}/api/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: usernameInput, password: passwordInput })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        localStorage.setItem('radar_token', data.token); // Sauvegarde la session
+        setIsAuthenticated(true);
+      } else {
+        setLoginError('❌ Identifiants ou mot de passe incorrects.');
+      }
+    })
+    .catch(() => setLoginError('❌ Impossible de joindre le serveur.'));
+  };
+
+  // Fonction de déconnexion
+  const handleLogout = () => {
+    localStorage.removeItem('radar_token');
+    setIsAuthenticated(false);
+  };
+
+  // --- CHARGEMENT DES DONNÉES (Seulement si connecté) ---
+  useEffect(() => {
+    if (!isAuthenticated) return; // Ne charge rien si on n'est pas connecté
+
+    const fetchStats = () => {
+      fetch(`${API_BASE_URL}/api/stats/pistes`)
+        .then(res => res.json())
+        .then(data => setStats(data))
+        .catch(err => console.error("Erreur stats directes:", err))
+    }
+
+    const fetchVols = () => {
+      fetch(`${API_BASE_URL}/api/vols/direct`)
+        .then(res => {
+          if (!res.ok) throw new Error('Impossible de joindre l\'API')
+          return res.json()
+        })
+        .then(data => {
+          setVols(data.data || [])
+          setLoading(false)
+        })
+        .catch(err => {
+          setError(err.message)
+          setLoading(false)
+        })
+    }
+
+    fetchStats()
+    fetchVols()
+
+    const interval = setInterval(() => {
+      fetchStats()
+      fetchVols()
+    }, 10000)
+
+    return () => clearInterval(interval)
+  }, [isAuthenticated]) // Se déclenche quand isAuthenticated devient true
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    fetch(`${API_BASE_URL}/api/stats/historique?periode=${periode}`)
+      .then(res => res.json())
+      .then(data => setHistoriqueStats(data))
+      .catch(err => console.error("Erreur historique:", err))
+  }, [periode, isAuthenticated])
+
+
+  // ==========================================
+  // ÉCRAN 1 : PAGE DE CONNEXION (Si non connecté)
+  // ==========================================
+  if (!isAuthenticated) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#f0f2f5' }}>
+        <div style={{ backgroundColor: '#fff', padding: '40px', borderRadius: '12px', boxShadow: '0 8px 16px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px', textAlign: 'center' }}>
+          <h1 style={{ fontSize: '3em', margin: '0 0 10px 0' }}>📡</h1>
+          <h2 style={{ color: '#2c3e50', marginBottom: '10px' }}>Radar LFBD - Accès Privé</h2>
+          <p style={{ color: '#7f8c8d', marginBottom: '30px', fontSize: '0.9em' }}>Veuillez vous identifier pour accéder au trafic en direct.</p>
+          
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <input 
+              type="text" 
+              placeholder="Nom d'utilisateur" 
+              value={usernameInput} 
+              onChange={(e) => setUsernameInput(e.target.value)}
+              style={{ padding: '12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '1em' }}
+              required
+            />
+            <input 
+              type="password" 
+              placeholder="Mot de passe" 
+              value={passwordInput} 
+              onChange={(e) => setPasswordInput(e.target.value)}
+              style={{ padding: '12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '1em' }}
+              required
+            />
+            {loginError && <div style={{ color: '#e74c3c', fontSize: '0.9em', fontWeight: 'bold' }}>{loginError}</div>}
+            
+            <button type="submit" style={{ padding: '12px', backgroundColor: '#1a73e8', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '1.1em', fontWeight: 'bold', cursor: 'pointer', marginTop: '10px' }}>
+              Se connecter
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // ÉCRAN 2 : LE TABLEAU DE BORD (Si connecté)
+  // ==========================================
+  if (loading) return <div style={{ padding: '20px', textAlign: 'center' }}>🛰️ Connexion au radar en cours...</div>
+  if (error) return <div style={{ padding: '20px', color: 'red' }}>❌ Erreur : {error}</div>
+
+  return (
+    <div style={{ padding: '20px', fontFamily: 'sans-serif', maxWidth: '1000px', margin: '0 auto', textAlign: 'left' }}>
+      
+      <header style={{ borderBottom: '2px solid #eee', paddingBottom: '25px', marginBottom: '30px', position: 'relative' }}>
+        {/* Bouton de déconnexion */}
+        <button onClick={handleLogout} style={{ position: 'absolute', top: '0', right: '0', padding: '8px 16px', backgroundColor: '#e74c3c', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
+          🔒 Déconnexion
+        </button>
+
+        <h1 style={{ margin: '0 0 5px 0', color: '#2c3e50', paddingRight: '120px' }}>📊 Tableau de Bord Radar & Statistiques (LFBD)</h1>
+        <p style={{ color: '#666', margin: '0 0 20px 0', fontSize: '0.95em' }}>
+          Mouvements enregistrés par vos balises virtuelles (mis à jour en continu)
+        </p>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {!stats ? (
+            <p>Chargement des statistiques de pistes...</p>
+          ) : (
+            Object.entries(stats).map(([piste, actions]) => {
+              const totalMouvements = (actions.atterrissage?.total || 0) + (actions.décollage?.total || 0);
+              if (totalMouvements === 0) return null;
+
+              return (
+                <div key={piste} style={{ backgroundColor: '#e8f4f8', border: '1px solid #bce0ed', borderRadius: '8px', padding: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                  <h3 style={{ margin: '0 0 15px 0', color: '#007bb5', borderBottom: '2px solid #bce0ed', paddingBottom: '5px' }}>{piste}</h3>
+                  <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                    {Object.entries(actions).map(([actionName, info]) => {
+                      if (info.total === 0) return null;
+                      return (
+                        <div key={actionName} style={{ flex: '1', minWidth: '280px', backgroundColor: '#fff', padding: '15px', borderRadius: '6px', border: '1px solid #d0e6f0' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                            <span style={{ textTransform: 'capitalize', fontWeight: 'bold', color: actionName === 'atterrissage' ? '#2ecc71' : '#e67e22' }}>
+                              {actionName === 'atterrissage' ? '🛬 Atterrissages' : '🛫 Décollages'}
+                            </span>
+                            <span style={{ fontSize: '1.2em', fontWeight: 'bold', backgroundColor: '#f1f2f6', padding: '2px 8px', borderRadius: '12px' }}>{info.total}</span>
+                          </div>
+                          
+                          <h4 style={{ margin: '15px 0 5px 0', fontSize: '0.85em', color: '#7f8c8d', textTransform: 'uppercase' }}>Derniers mouvements :</h4>
+                          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                            {info.vols.map((v, i) => (
+                              <li key={i} style={{ fontSize: '0.85em', padding: '6px 0', borderBottom: i < info.vols.length - 1 ? '1px dashed #eee' : 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                  <strong style={{ color: '#1a73e8' }}>{v.callsign}</strong>
+                                  <span style={{ marginLeft: '8px', color: '#2c3e50', backgroundColor: '#f5f6fa', padding: '1px 4px', borderRadius: '3px' }}>{v.origine} ➔ {v.destination}</span>
+                                </div>
+                                <span style={{ color: '#7f8c8d', fontSize: '0.9em' }}>{v.horaire_passage?.includes(' ') ? v.horaire_passage.split(' ')[1] : v.horaire_passage} | {parseInt(v.altitude_metres)}m</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })
+          )}
+        </div>
+      </header>
+
+      <section style={{ backgroundColor: '#fff', border: '1px solid #ddd', borderRadius: '12px', padding: '25px', marginBottom: '40px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+        <h2 style={{ margin: '0 0 15px 0', fontSize: '1.3em', color: '#2c3e50' }}>📈 Analyses Globale & Répartition des Pistes</h2>
+        
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '25px' }}>
+          {['jour', 'semaine', 'mois', 'annee'].map((p) => (
+            <button key={p} onClick={() => setPeriode(p)} style={{ padding: '10px 20px', borderRadius: '20px', border: '2px solid #1a73e8', cursor: 'pointer', backgroundColor: periode === p ? '#1a73e8' : '#fff', color: periode === p ? '#fff' : '#1a73e8', fontWeight: 'bold', textTransform: 'capitalize' }}>
+              {p === 'jour' ? 'Dernières 24h' : `Cette ${p === 'semaine' ? 'semaine' : p === 'mois' ? 'mois' : 'année'}`}
+            </button>
+          ))}
+        </div>
+
+        {historiqueStats.total === 0 ? (
+          <p style={{ fontStyle: 'italic', color: '#999', margin: 0, backgroundColor: '#f9f9f9', padding: '15px', borderRadius: '8px' }}>Aucun vol enregistré dans la base de données sur cette période pour le moment.</p>
+        ) : (
+          <div>
+            <div style={{ fontSize: '1.15em', marginBottom: '25px', color: '#34495e' }}>Volume total de trafic enregistré : <strong style={{ color: '#1a73e8', fontSize: '1.2em' }}>{historiqueStats.total}</strong> mouvements.</div>
+            
+            <h3 style={{ fontSize: '0.85em', color: '#7f8c8d', textTransform: 'uppercase', margin: '20px 0 10px 0', letterSpacing: '0.5px' }}>📊 Importance des Axes</h3>
+            <div style={{ display: 'flex', gap: '20px', marginBottom: '30px', flexWrap: 'wrap' }}>
+              {Object.entries(historiqueStats.axes).map(([axe, pct]) => (
+                <div key={axe} style={{ flex: 1, minWidth: '220px', backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '8px', borderLeft: '5px solid #2c3e50' }}>
+                  <div style={{ fontSize: '0.9em', color: '#666', fontWeight: 'bold' }}>{axe}</div>
+                  <div style={{ fontSize: '1.8em', fontWeight: 'bold', color: '#2c3e50', marginTop: '5px' }}>{pct}%</div>
+                  <div style={{ width: '100%', backgroundColor: '#e2e8f0', height: '6px', borderRadius: '3px', marginTop: '10px', overflow: 'hidden' }}><div style={{ width: `${pct}%`, backgroundColor: '#1a73e8', height: '100%' }}></div></div>
+                </div>
+              ))}
+            </div>
+
+            <h3 style={{ fontSize: '0.85em', color: '#7f8c8d', textTransform: 'uppercase', margin: '20px 0 10px 0', letterSpacing: '0.5px' }}>🎯 Utilisation par Piste</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '15px' }}>
+              {Object.entries(historiqueStats.pistes).map(([piste, pct]) => (
+                <div key={piste} style={{ backgroundColor: '#e8f4f8', padding: '15px', borderRadius: '8px', textAlign: 'center', border: '1px solid #bce0ed' }}>
+                  <div style={{ fontWeight: 'bold', color: '#007bb5', fontSize: '1.05em' }}>{piste}</div>
+                  <div style={{ fontSize: '2em', fontWeight: 'bold', marginTop: '8px', color: '#2c3e50' }}>{pct}%</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+
+      <section style={{ marginBottom: '40px' }}>
+        <h2 style={{ margin: '0 0 15px 0', color: '#2c3e50' }}>🗺️ Suivi Radar (Temps Réel)</h2>
+        <div style={{ height: '400px', width: '100%', borderRadius: '12px', overflow: 'hidden', border: '2px solid #ddd', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+          <MapContainer center={[44.8283, -0.7156]} zoom={10} style={{ height: '100%', width: '100%' }}>
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap contributors' />
+            <Polyline positions={axePiste0523} color="#3498db" weight={8} opacity={0.3} dashArray="10, 10" />
+            <Polyline positions={axePiste1129} color="#e74c3c" weight={8} opacity={0.3} dashArray="10, 10" />
+            {vols.map((avion, index) => (
+              avion.latitude && avion.longitude ? (
+                <Marker key={index} position={[avion.latitude, avion.longitude]} icon={getPlaneIcon(avion.cap)}>
+                  <Popup>
+                    <div style={{ textAlign: 'center' }}>
+                      <strong style={{ fontSize: '1.2em', color: '#1a73e8' }}>{avion.callsign}</strong><br/>
+                      <span style={{ color: '#666' }}>Type: {avion.type}</span><br/>
+                      <hr style={{ margin: '5px 0' }}/>
+                      <strong>Alt:</strong> {avion.altitude}<br/>
+                      <strong>Vit:</strong> {avion.vitesse} kts<br/>
+                      <strong>Cap:</strong> {avion.cap}°
+                    </div>
+                  </Popup>
+                </Marker>
+              ) : null
+            ))}
+          </MapContainer>
+        </div>
+      </section>
+
+      <section>
+        <h2 style={{ margin: '0 0 5px 0', color: '#2c3e50' }}>✈️ Trafic Régional Détaillé</h2>
+        <p style={{ color: '#666', margin: '0 0 20px 0', fontSize: '0.95em' }}><strong>{vols.length}</strong> avions détectés actuellement</p>
+        <div style={{ display: 'grid', gap: '15px' }}>
+          {vols.length === 0 ? <p>Aucun avion détecté.</p> : (
+            vols.map((avion, index) => (
+              <div key={index} style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '15px', backgroundColor: '#f9f9f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <span style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#1a73e8', marginRight: '10px' }}>{avion.callsign}</span>
+                  <span style={{ backgroundColor: '#eee', padding: '2px 6px', borderRadius: '4px', fontSize: '0.85em' }}>{avion.type}</span>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontWeight: 'bold' }}>Alt: {avion.altitude}</div>
+                  <div style={{ color: '#666', fontSize: '0.9em' }}>Vit: {avion.vitesse} kts</div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
+
+    </div>
+  )
+}
+
+export default App
