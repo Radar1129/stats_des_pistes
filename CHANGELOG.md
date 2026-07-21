@@ -24,3 +24,12 @@
   - **`🚕 ROULAGE / SOL`** : Prioritaire pour toute altitude $< 100\text{ m}$ avec faible taux vertical, ou altitude $< 300\text{ m}$ sans pente forte.
   - **`🛫 DÉCOLLAGE`** : Déclenché uniquement si $\text{txVert} > +150\text{ ft/min}$ (élimine les micro-variations).
   - **`🛬 EN APPROCHE`** : Déclenché uniquement si $\text{txVert} < -150\text{ ft/min}$.
+
+## [Unreleased] - 2026-07-22
+
+### Ajouté
+* **Collecteur automatique (`collector.py`)** : Script asynchrone autonome récupérant les vols LFBD sur une fenêtre glissante de 3 jours ($J-1$, $J$, $J+1$) toutes les 5 minutes.
+* **Base de données (`lfbd_schedule.db`)** : Table SQLite `flights` idempotente avec clé primaire unique (`uid`).
+
+### Modifié
+* **API Backend (`backend/api.py`)** : Route `@app.get("/api/vols/expected")` raccordée directement à la base SQLite `lfbd_schedule.db` (remplace l'ancien fichier `scraped_cache.json`).

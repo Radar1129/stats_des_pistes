@@ -368,3 +368,18 @@ La fonction `isBordeauxMovement(avion)` agit comme un filtre de mise en évidenc
    - **Forcer le rendu Leaflet (Le piège de la Key) :** React-Leaflet ne met pas toujours à jour une icône si le marqueur existe déjà. Pour forcer un changement visuel conditionnel, il faut altérer sa clé : `key={index + (isPrincipal ? "-live" : "")}`.
    - **Bypass CSS Leaflet :** Pour agrandir dynamiquement une icône `L.DivIcon`, il faut modifier `iconSize` et `iconAnchor`, MAIS AUSSI retirer ou changer le `className` pour éviter qu'une règle CSS globale ne bride la taille.
    - **Comparaison de vols (Le piège des espaces) :** Les données ADS-B contiennent souvent des espaces invisibles dans les numéros de vol (`"EZY34GB   "`). Pour comparer deux avions, toujours utiliser `.callsign.trim()` ou vérifier l'objet en mémoire (`avion1 === avion2`).
+
+## 🔄 État de la Collecte & Backend (Mise à jour 2026-07-22)
+
+- **Collecteur (`collector.py`)** :
+  - Tourne en tâche de fond via `nohup` (`./venv/bin/python collector.py > collector.log 2>&1 &`).
+  - Scrape l'API AJAX de l'aéroport de Bordeaux toutes les 5 min.
+  - Fenêtre glissante de 3 jours ($J-1$, $J$, $J+1$) pour anticiper et garder l'historique sans rupture à minuit.
+
+- **Base de données (`lfbd_schedule.db`)** :
+  - Emplacement : `/home/ubuntu/stats_des_pistes/lfbd_schedule.db`
+  - Table principale : `flights` (champs : `uid`, `direction`, `scheduled_date`, `scheduled_time`, `origin_dest`, `callsign`, `airline`, `status`, `updated_at`).
+
+- **API Backend (`backend/api.py`)** :
+  - Endpoint `/api/vols/expected` : Lit directement dans `lfbd_schedule.db` filtré sur `scheduled_date = date('now')`.
+  - Processus Uvicorn sur port `8000`.
