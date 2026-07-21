@@ -8,25 +8,25 @@ const API_BASE_URL = '';
 
 const getPlaneIcon = (cap, isLocal, isPrincipal = false) => {
   const rotation = cap || 0;
-  // Couleur Jaune Orangé très vif !
-  const color = isPrincipal ? '#ffcc00' : (isLocal ? '#e74c3c' : '#1a73e8');
+  // Orange Vif (equilibre) + detour sombre pour la lisibilite
+  const color = isPrincipal ? '#ff6600' : (isLocal ? '#e74c3c' : '#1a73e8');
   
-  // Taille XXL (60px) pour l'alerte
-  const containerSize = isPrincipal ? 60 : 30;
-  const svgSize = isPrincipal ? 54 : 26;
+  // Format XL (42px) au lieu de XXL (60px)
+  const containerSize = isPrincipal ? 42 : 30;
+  const svgSize = isPrincipal ? 38 : 26;
   const anchor = containerSize / 2;
-  const glow = isPrincipal ? `drop-shadow(0px 0px 10px rgba(255, 204, 0, 0.9))` : `drop-shadow(1px 1px 2px rgba(0,0,0,0.4))`;
-  
+  const glow = isPrincipal ? `drop-shadow(0px 0px 6px rgba(255, 102, 0, 0.7))` : `drop-shadow(1px 1px 2px rgba(0,0,0,0.4))`;
+  const strokeAttr = isPrincipal ? 'stroke="#111111" stroke-width="0.8" stroke-linejoin="round"' : '';
+
   const svgHtml = `
     <div style="transform: rotate(${rotation}deg); transform-origin: center; width: ${containerSize}px; height: ${containerSize}px; display: flex; justify-content: center; align-items: center;">
-      <svg width="${svgSize}" height="${svgSize}" viewBox="0 0 24 24" fill="${color}" xmlns="http://www.w3.org/2000/svg" style="filter: ${glow};">
+      <svg width="${svgSize}" height="${svgSize}" viewBox="0 0 24 24" fill="${color}" ${strokeAttr} xmlns="http://www.w3.org/2000/svg" style="filter: ${glow};">
         <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L14 19v-5.5l8 2.5z"/>
       </svg>
     </div>
   `;
   return new L.DivIcon({
     html: svgHtml,
-    // BYPASS CSS : On retire la classe 'custom-plane-icon' pour éviter qu'un CSS bride la taille
     className: isPrincipal ? 'custom-plane-icon-live' : 'custom-plane-icon',
     iconSize: [containerSize, containerSize],
     iconAnchor: [anchor, anchor]
@@ -112,7 +112,14 @@ function App() {
   const scrollIndex = Math.max(0, targetIndex - 2);
 
   const isBordeauxMovement = (avion) => {
-    const altM = parseInt(avion.altM || avion.altitude) || 0;
+    // Conversion pieds -> mètres si besoin
+    const altBrute = parseInt(avion.altM || avion.altitude || 0);
+    const altM = avion.altM ? parseInt(avion.altM) : (altBrute > 3000 ? Math.round(altBrute * 0.3048) : altBrute);
+    const vitesse = parseInt(avion.vitesse || avion.speed || 0);
+
+    // GARDE-FOU TRANSIT : Exclure d'office tout vol > 2000m (~6500ft) ou > 320kts
+    if (altM > 2000 || vitesse > 320) return false;
+
     const txVert = parseFloat(avion.txVert || avion.taux_vertical) || 0;
 
     const volProgramme = volsPrevus.find(p => {
@@ -134,7 +141,9 @@ function App() {
     return altM <= 500;
   };
 
-  const volLivePrincipal = (avionClique && vols.find(v => v.callsign === avionClique.callsign)) || vols.find(isBordeauxMovement);
+  const mouvementsLocaux = vols.filter(isBordeauxMovement);
+  const avionEnVol = mouvementsLocaux.find(v => parseInt(v.vitesse || 0) > 40 || parseInt(v.altM || v.altitude || 0) > 150);
+  const volLivePrincipal = (avionClique && vols.find(v => v.callsign === avionClique.callsign)) || avionEnVol || mouvementsLocaux[0];
 
   const getPisteFromCap = (cap) => {
     if (cap === undefined || cap === null) return "LFBD";
