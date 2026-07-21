@@ -1,0 +1,17 @@
+
+## [2026-07-21] - Refonte de la Pré-détection & Restructuration Frontend
+
+### 🚀 Nouveautés & Logique Métier
+- **Cycle de validation des vols à 2 niveaux** :
+  - **`🟠 Pré-détecté`** : Assignation automatique du "pari" dès qu'une trame radar ADS-B correspond à un vol du programme.
+  - **`🟢 Détection confirmée`** : Statut réservé à la confirmation réseau/base de données.
+- **Persistance de la pré-détection (`localStorage`)** :
+  - Enregistrement des paires `vol_heure` dans la clé `radar_pre_detectes`.
+  - Le badge **`🟠 Pré-détecté`** reste désormais verrouillé sur la ligne du tableau, même une fois l'avion sorti du champ radar live.
+- **Raffinage du design visuel** :
+  - Le surlignage (fond rose + liseré rouge) s'active **uniquement quand l'avion est physiquement en direct** sur l'antenne.
+  - Suppression définitive du cadre/contour bleu (`outline`) sur la ligne cible temporelle.
+
+### 🛠️ Corrections & Robustesse React
+- **Restructuration de `App.jsx`** : Réalignement strict de la séquence d'exécution des Hooks React (`useState` $\rightarrow$ Calculs & Matching $\rightarrow$ `useEffect` $\rightarrow$ Early Returns $\rightarrow$ JSX) pour éradiquer la zone morte temporaire et l'erreur React #310.
+- **Audit Scraper (`check_aerovision.py`)** : Inspection du cache JSON (`scraped_cache.json`) et analyse de la tolérance aux anomalies de publication sur le site de l'aéroport.

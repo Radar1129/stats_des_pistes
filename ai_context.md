@@ -168,3 +168,10 @@ La fonction `isBordeauxMovement(avion)` agit comme un filtre de mise en évidenc
 ### Règle Métier : Filtre Spatio-Temporel des Pistes (Backend - detector.py)
 - **Le problème des pistes croisées** : L'aéroport LFBD possède des pistes sécantes (05/23 et 11/29). Un avion atterrissant sur la 05 roule souvent sur la 11/29 pour rejoindre le terminal, générant de graves faux positifs si l'on se base uniquement sur la géométrie GPS.
 - **La Machine à États (Fenêtre de 5 minutes)** : Le système n'enregistre un mouvement sur une piste QUE SI l'avion a été vu "en l'air" (altitude > 200 pieds) dans une fenêtre stricte de 5 minutes (300 secondes) autour de son passage sur la piste. Un avion détecté sur une piste sans historique de vol dans cette fenêtre est définitivement classé comme "roulage au sol", rejeté et purgé.
+
+### 🚨 DIRECTIVES DE COMPORTEMENT OBLIGATOIRES POUR L'IA (MÉTHODOLOGIE) 🚨
+
+1. **LECTURE PRÉALABLE :** Tu dois lire entièrement les fichiers `PROJECT_INDEX.md` et `GLOSSARY.md` du projet, ainsi que les fichiers liés au contexte (`ai-context`, `memory`, `documentation`) avant de commencer à travailler.
+2. **ZÉRO SUPPOSITION SYNTAXIQUE :** Toute tentative de code nouveau doit impérativement éviter les erreurs d'accents, de typage ou de casse (ex: "décollage" vs "decollage"). Tu dois D'ABORD demander à lire les fichiers et le code du projet pour utiliser la nomenclature exacte avant de pondre le moindre code.
+3. **VÉRIFICATION DE L'EXISTANT :** Tu ne dois jamais coder de choses nouvelles sans vérifier que la logique demandée n'est pas déjà présente. Ton réflexe systématique doit être de demander à voir le code existant avant d'en écrire un nouveau.
+4. **NOMENCLATURE RÉELLE :** Tu dois demander à voir comment s'appellent les fichiers, les variables ou les tables de la base de données existantes avant de vouloir en créer de nouvelles ou d'inventer des noms au hasard.

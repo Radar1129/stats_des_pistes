@@ -27,7 +27,6 @@ const getPlaneIcon = (cap, isLocal) => {
 const axePiste0523 = [[44.730, -0.850], [44.828, -0.715], [44.910, -0.600]];
 const axePiste1129 = [[44.8572, -0.8500], [44.8281, -0.7150], [44.8030, -0.5800]];
 
-
 const dicoCompagnies = {
   "W9": "WUK", "W6": "WZZ", "LX": "SWR", "U2": "EJU", "DS": "EZS", "AF": "AFR",
   "FR": "RYR", "TO": "TVF", "V7": "VOE", "A5": "HOP", "KL": "KLM",
@@ -37,25 +36,28 @@ const dicoCompagnies = {
 };
 
 function App() {
+  // 1. ÉTATS & REFS REACT
   const [avionClique, setAvionClique] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('radar_token') !== null);
   const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  const [vols, setVols] = useState([])
-  const [stats, setStats] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [periode, setPeriode] = useState('jour')
-  const [historiqueStats, setHistoriqueStats] = useState({ total: 0, axes: {}, pistes: {}, collecte_initiee: "Inconnue" })
-  
-  const [volsPrevus, setVolsPrevus] = useState([])
-  const [scoreGlobal, setScoreGlobal] = useState(0)
+  const [vols, setVols] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [periode, setPeriode] = useState('jour');
+  const [historiqueStats, setHistoriqueStats] = useState({ total: 0, axes: {}, pistes: {}, collecte_initiee: "Inconnue" });
+
+  const [volsPrevus, setVolsPrevus] = useState([]);
+  const [scoreGlobal, setScoreGlobal] = useState(0);
+  const [preDetectesList, setPreDetectesList] = useState(() => JSON.parse(localStorage.getItem('radar_pre_detectes') || '[]'));
 
   const tableContainerRef = useRef(null);
   const scrollDoneForIndex = useRef(-1);
 
+  // 2. FONCTIONS DE SERVICE
   const getSecurePct = (valeur) => {
     if (!valeur) return 0;
     if (typeof valeur === "object") return Math.round(valeur.pourcentage ?? 0);
@@ -85,32 +87,7 @@ function App() {
     setIsAuthenticated(false);
   };
 
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    const fetchAllData = () => {
-      const t = Date.now();
-      
-      fetch(`${API_BASE_URL}/api/stats/pistes?t=${t}`).then(res => res.json()).then(setStats).catch(console.error);
-      fetch(`${API_BASE_URL}/api/vols/expected?t=${t}`).then(res => res.json()).then(data => setVolsPrevus(data.data || [])).catch(console.error);
-      fetch(`${API_BASE_URL}/api/score?t=${t}`).then(res => res.json()).then(data => setScoreGlobal(Math.round(data.score || 0))).catch(console.error);
-      fetch(`${API_BASE_URL}/api/stats/historique?periode=${periode}&t=${t}`).then(res => res.json()).then(setHistoriqueStats).catch(console.error);
-      
-      fetch(`${API_BASE_URL}/api/vols/direct?t=${t}`).then(res => res.json()).then(data => { 
-        setVols(data || []); 
-        setLoading(false); 
-      }).catch(err => { 
-        setError(err.message); 
-        setLoading(false); 
-      });
-    };
-
-    fetchAllData();
-    const interval = setInterval(fetchAllData, 10000);
-    
-    return () => clearInterval(interval);
-  }, [isAuthenticated, periode]);
-
+  // 3. CALCULS DE TEMPS ET CIBLAGE
   const timeStr = new Date().toLocaleTimeString('en-GB', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit' });
   const [h, m] = timeStr.split(':').map(Number);
   const currentMinutes = h * 60 + m;
@@ -123,37 +100,11 @@ function App() {
   if (targetIndex === -1 && volsPrevus.length > 0) {
     targetIndex = volsPrevus.length - 1;
   }
-
   const scrollIndex = Math.max(0, targetIndex - 2);
 
-  useEffect(() => {
-    if (volsPrevus.length > 0 && scrollIndex !== -1) {
-      if (scrollDoneForIndex.current !== scrollIndex) {
-        const el = document.getElementById('ligne-vol-scroll-cible');
-        if (el) {
-          el.scrollIntoView({ block: 'start', behavior: 'auto' });
-          scrollDoneForIndex.current = scrollIndex;
-        }
-      }
-    }
-  });
-
-  if (loading && isAuthenticated) return <div style={{ padding: '20px', textAlign: 'center' }}>🛰️ Connexion au radar en cours...</div>
-  if (error) return <div style={{ padding: '20px', color: 'red' }}>❌ Erreur : {error}</div>
-
-  const volsActifs = volsPrevus.filter(v => {
-    const s = (v.statut || v.remarque || '').toLowerCase();
-    return !s.includes('annulé') && !s.includes('cancel');
-  });
-  
-  const totalPrevus = volsActifs.length;
-  const totalDetectes = volsActifs.filter(v => v.detecte === true || v.detecte === "true").length;
-  const totalAnnules = volsPrevus.length - volsActifs.length;
-
-  // RIGUEUR : Logique adaptative d'altitude (Plafond 1500m pour les approches, 500m pour les décollages)
   const isBordeauxMovement = (avion) => {
-    const altM = parseInt(avion.altitude) || 0;
-    const txVert = parseFloat(avion.taux_vertical) || 0;
+    const altM = parseInt(avion.altM || avion.altitude) || 0;
+    const txVert = parseFloat(avion.txVert || avion.taux_vertical) || 0;
 
     const volProgramme = volsPrevus.find(p => {
       if (!p.vol || !avion.callsign) return false;
@@ -171,7 +122,6 @@ function App() {
     if (txVert !== 0 || estArrivee || estDepart) {
       return altM <= 1500;
     }
-
     return altM <= 500;
   };
 
@@ -186,33 +136,9 @@ function App() {
     return "LFBD";
   };
 
-  
-  // --- NOUVELLES FONCTIONNALITÉS ALERTE LIVE ---
-  
-  // --- COMPOSANT INFOBULLE (TOOLTIP) RÉUTILISABLE ---
-  const Tooltip = ({ content }) => (
-    <div style={{ position: 'relative', display: 'inline-block', marginLeft: '8px', zIndex: 100 }}
-         onMouseEnter={(e) => { e.currentTarget.lastChild.style.opacity = 1; e.currentTarget.lastChild.style.visibility = 'visible'; }}
-         onMouseLeave={(e) => { e.currentTarget.lastChild.style.opacity = 0; e.currentTarget.lastChild.style.visibility = 'hidden'; }}>
-      <div style={{ cursor: 'help', backgroundColor: '#666', color: '#fff', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold' }}>?</div>
-      <div style={{ opacity: 0, visibility: 'hidden', transition: 'opacity 0.2s', position: 'absolute', top: '130%', left: '0', backgroundColor: '#2d3436', color: '#fff', padding: '12px', borderRadius: '6px', width: '340px', fontSize: '0.85rem', lineHeight: '1.5', boxShadow: '0 4px 15px rgba(0,0,0,0.3)', textTransform: 'none', fontWeight: 'normal', pointerEvents: 'none', whiteSpace: 'pre-line' }}>
-        {content}
-      </div>
-    </div>
-  );
-
-const calculateDistance = (lat, lon) => {
-    const R = 6371; // Rayon de la Terre en km
-    const dLat = (44.8283 - lat) * Math.PI / 180;
-    const dLon = (-0.7156 - lon) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(44.8283 * Math.PI / 180) * Math.cos(lat * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return (R * c).toFixed(1); // Distance avec 1 chiffre après la virgule
-  };
-
   const getPhaseDeVol = (avion) => {
-    const tx = parseFloat(avion.taux_vertical) || 0;
-    const alt = parseInt(avion.altitude) || 0;
+    const tx = parseFloat(avion.txVert || avion.taux_vertical) || 0;
+    const alt = parseInt(avion.altM || avion.altitude) || 0;
     if (tx > 0) return "🛫 DÉCOLLAGE";
     if (tx < 0) return "🛬 EN APPROCHE";
     if (alt < 300) return "🚕 ROULAGE / SOL";
@@ -226,16 +152,17 @@ const calculateDistance = (lat, lon) => {
     return null;
   };
 
+  // 4. ALGORITHME DE PARI RADAR (MATCHING)
   const matchedProg = (() => {
     if (!volLivePrincipal || !volsPrevus || volsPrevus.length === 0) return null;
-    
-    const liveIsDescending = volLivePrincipal.txVert < -64;
-    const liveIsClimbing = volLivePrincipal.txVert > 64;
-    
+
+    const liveIsDescending = (volLivePrincipal.txVert || volLivePrincipal.taux_vertical) < -64;
+    const liveIsClimbing = (volLivePrincipal.txVert || volLivePrincipal.taux_vertical) > 64;
+
     const cleanC = volLivePrincipal.callsign ? volLivePrincipal.callsign.replace(/\s+/g, '').toUpperCase() : '';
     const digitsC = cleanC.replace(/\D/g, '');
     const lettersC = cleanC.replace(/[0-9]/g, '');
-    
+
     const now = new Date();
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
@@ -243,65 +170,119 @@ const calculateDistance = (lat, lon) => {
     let minDiff = Infinity;
 
     for (const p of volsPrevus) {
-        if (!p.vol) continue;
-        
-        const isArrival = p.type && p.type.toLowerCase().includes('arriv');
-        const isDeparture = p.type && p.type.toLowerCase().includes('dép');
-        
-        // 1. Sécurité Trajectoire : interdiction formelle de croiser départ/arrivée
-        if (liveIsDescending && isDeparture) continue;
-        if (liveIsClimbing && isArrival) continue;
+      if (!p.vol) continue;
 
-        const cleanP = p.vol.replace(/\s+/g, '').toUpperCase();
-        const digitsP = cleanP.replace(/\D/g, '');
-        const lettersP = cleanP.replace(/[0-9]/g, '');
+      const isArrival = p.type && p.type.toLowerCase().includes('arriv');
+      const isDeparture = p.type && p.type.toLowerCase().includes('dép');
 
-        // 2. Matching IATA / OACI (La compagnie est-elle la bonne ?)
-        const equiv = {
-            "AF": ["AFR"], "U2": ["EJU", "EZY"], "FR": ["RYR"], "V7": ["VOE"], 
-            "TO": ["TVF"], "VY": ["VLG"], "BA": ["BAW"], "LH": ["DLH"], "KL": ["KLM"], 
-            "IB": ["IBE"], "LX": ["SWR"], "AT": ["RAM"], "TK": ["THY"], "EI": ["EIN"]
-        };
-        
-        let letterMatch = false;
-        if (!lettersP || !lettersC) letterMatch = true;
-        else if (lettersP.includes(lettersC) || lettersC.includes(lettersP)) letterMatch = true;
-        else {
-            const oaciList = equiv[lettersP] || [];
-            if (oaciList.some(oaci => lettersC.includes(oaci))) letterMatch = true;
+      if (liveIsDescending && isDeparture) continue;
+      if (liveIsClimbing && isArrival) continue;
+
+      const cleanP = p.vol.replace(/\s+/g, '').toUpperCase();
+      const digitsP = cleanP.replace(/\D/g, '');
+      const lettersP = cleanP.replace(/[0-9]/g, '');
+
+      const equiv = {
+        "AF": ["AFR"], "U2": ["EJU", "EZY"], "FR": ["RYR"], "V7": ["VOE"],
+        "TO": ["TVF"], "VY": ["VLG"], "BA": ["BAW"], "LH": ["DLH"], "KL": ["KLM"],
+        "IB": ["IBE"], "LX": ["SWR"], "AT": ["RAM"], "TK": ["THY"], "EI": ["EIN"]
+      };
+
+      let letterMatch = false;
+      const cStr = ((p.compagnie || '') + (p.vol || '')).toUpperCase();
+      if (cStr.includes('EASY') && (lettersC.includes('EJU') || lettersC.includes('EZY'))) letterMatch = true;
+      if (cStr.includes('VOLOTEA') && lettersC.includes('VOE')) letterMatch = true;
+      if (cStr.includes('TRANSAVIA') && lettersC.includes('TVF')) letterMatch = true;
+      if (cStr.includes('RYANAIR') && lettersC.includes('RYR')) letterMatch = true;
+      if (cStr.includes('AIR') && lettersC.includes('AFR')) letterMatch = true;
+
+      if (!lettersP || !lettersC) letterMatch = true;
+      else if (lettersP.includes(lettersC) || lettersC.includes(lettersP)) letterMatch = true;
+      else {
+        const oaciList = equiv[lettersP] || [];
+        if (oaciList.some(oaci => lettersC.includes(oaci))) letterMatch = true;
+      }
+
+      if (!letterMatch) continue;
+
+      let digitMatch = false;
+      if (digitsP && digitsC) {
+        if (digitsP === digitsC) digitMatch = true;
+        else if (digitsC.length >= 2 && digitsP.includes(digitsC)) digitMatch = true;
+        else if (digitsP.length >= 2 && digitsC.includes(digitsP)) digitMatch = true;
+      }
+
+      if (digitMatch) return p;
+
+      if (p.heure) {
+        const [h, m] = p.heure.split(':').map(Number);
+        const progMinutes = h * 60 + m;
+        let diff = Math.abs(nowMinutes - progMinutes);
+        if (diff > 720) diff = 1440 - diff;
+
+        if (diff <= 150 && diff < minDiff) {
+          minDiff = diff;
+          bestMatch = p;
         }
-
-        if (!letterMatch) continue; // Ce n'est pas la bonne compagnie, on passe au vol suivant
-
-        // 3. Matching des Chiffres (Si c'est parfait, c'est lui !)
-        let digitMatch = false;
-        if (digitsP && digitsC) {
-            if (digitsP === digitsC) digitMatch = true;
-            else if (digitsC.length >= 2 && digitsP.includes(digitsC)) digitMatch = true;
-            else if (digitsP.length >= 2 && digitsC.includes(digitsP)) digitMatch = true;
-        }
-
-        if (digitMatch) return p; // VICTOIRE IMMÉDIATE
-
-        // 4. LE TOUR DE MAGIE : Fallback temporel pour les callsigns complexes (ex: VOE8NN)
-        if (p.heure) {
-            const [h, m] = p.heure.split(':').map(Number);
-            const progMinutes = h * 60 + m;
-            let diff = Math.abs(nowMinutes - progMinutes);
-            
-            // Gestion du passage à minuit
-            if (diff > 720) diff = 1440 - diff;
-            
-            // Si l'avion est dans la fenêtre de 2h30 (150 minutes) et que c'est le plus proche
-            if (diff <= 150 && diff < minDiff) {
-                minDiff = diff;
-                bestMatch = p;
-            }
-        }
+      }
     }
-    
-    return bestMatch; // Retourne la meilleure supposition temporelle, ou null
+    return bestMatch;
   })();
+
+  // 5. TOUS LES HOOKS USEEFFECT (Placés AVANT tout return conditionnel)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const fetchAllData = () => {
+      const t = Date.now();
+      fetch(`${API_BASE_URL}/api/stats/pistes?t=${t}`).then(res => res.json()).then(setStats).catch(console.error);
+      fetch(`${API_BASE_URL}/api/vols/expected?t=${t}`).then(res => res.json()).then(data => setVolsPrevus(data.data || [])).catch(console.error);
+      fetch(`${API_BASE_URL}/api/score?t=${t}`).then(res => res.json()).then(data => setScoreGlobal(Math.round(data.score || 0))).catch(console.error);
+      fetch(`${API_BASE_URL}/api/stats/historique?periode=${periode}&t=${t}`).then(res => res.json()).then(setHistoriqueStats).catch(console.error);
+
+      fetch(`${API_BASE_URL}/api/vols/direct?t=${t}`).then(res => res.json()).then(data => {
+        setVols(data || []);
+        setLoading(false);
+      }).catch(err => {
+        setError(err.message);
+        setLoading(false);
+      });
+    };
+
+    fetchAllData();
+    const interval = setInterval(fetchAllData, 10000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, periode]);
+
+  useEffect(() => {
+    if (volsPrevus.length > 0 && scrollIndex !== -1) {
+      if (scrollDoneForIndex.current !== scrollIndex) {
+        const el = document.getElementById('ligne-vol-scroll-cible');
+        if (el) {
+          el.scrollIntoView({ block: 'start', behavior: 'auto' });
+          scrollDoneForIndex.current = scrollIndex;
+        }
+      }
+    }
+  });
+
+  useEffect(() => {
+    if (matchedProg && matchedProg.vol && matchedProg.heure) {
+      const key = `${matchedProg.vol}_${matchedProg.heure}`;
+      setPreDetectesList(prev => {
+        if (!prev.includes(key)) {
+          const next = [...prev, key];
+          localStorage.setItem('radar_pre_detectes', JSON.stringify(next));
+          return next;
+        }
+        return prev;
+      });
+    }
+  }, [matchedProg?.vol, matchedProg?.heure]);
+
+  // 6. SORTIES PRÉMATURÉES (EARLY RETURNS)
+  if (loading && isAuthenticated) return <div style={{ padding: '20px', textAlign: 'center' }}>🛰️ Connexion au radar en cours...</div>
+  if (error) return <div style={{ padding: '20px', color: 'red' }}>❌ Erreur : {error}</div>
 
   if (!isAuthenticated) {
     return (
@@ -319,9 +300,31 @@ const calculateDistance = (lat, lon) => {
     );
   }
 
+  // 7. COMPOSANT TOOLTIP & STATS TABLEAU
+  const Tooltip = ({ content }) => (
+    <div style={{ position: 'relative', display: 'inline-block', marginLeft: '8px', zIndex: 100 }}
+         onMouseEnter={(e) => { e.currentTarget.lastChild.style.opacity = 1; e.currentTarget.lastChild.style.visibility = 'visible'; }}
+         onMouseLeave={(e) => { e.currentTarget.lastChild.style.opacity = 0; e.currentTarget.lastChild.style.visibility = 'hidden'; }}>
+      <div style={{ cursor: 'help', backgroundColor: '#666', color: '#fff', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold' }}>?</div>
+      <div style={{ opacity: 0, visibility: 'hidden', transition: 'opacity 0.2s', position: 'absolute', top: '130%', left: '0', backgroundColor: '#2d3436', color: '#fff', padding: '12px', borderRadius: '6px', width: '340px', fontSize: '0.85rem', lineHeight: '1.5', boxShadow: '0 4px 15px rgba(0,0,0,0.3)', textTransform: 'none', fontWeight: 'normal', pointerEvents: 'none', whiteSpace: 'pre-line' }}>
+        {content}
+      </div>
+    </div>
+  );
+
+  const volsActifs = volsPrevus.filter(v => {
+    const s = (v.statut || v.remarque || '').toLowerCase();
+    return !s.includes('annulé') && !s.includes('cancel');
+  });
+
+  const totalPrevus = volsActifs.length;
+  const totalDetectes = volsActifs.filter(v => v.detecte === true || v.detecte === "true" || v.detecte === 2).length;
+  const totalAnnules = volsPrevus.length - volsActifs.length;
+
+  // 8. RENDU JSX PRINCIPAL
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif', maxWidth: '1400px', margin: '0 auto', textAlign: 'left', backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-      
+
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '10px', borderBottom: '1px solid #ddd' }}>
         <h1 style={{ margin: 0, fontSize: '1.6em', fontWeight: 'bold', color: '#0f2042', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
           📋 Tableau de Bord Radar & Statistiques (LFBD)
@@ -330,7 +333,8 @@ const calculateDistance = (lat, lon) => {
       </header>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.35fr', gap: '20px', marginBottom: '20px' }}>
-        
+
+        {/* ALERTE LIVE */}
         <div style={{ backgroundColor: '#fff', border: '2px solid #e74c3c', borderRadius: '8px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#e74c3c', fontWeight: 'bold', fontSize: '0.95em' }}>
@@ -353,7 +357,6 @@ L'algorithme isole l'avion le plus pertinent via un plafond adaptatif (1500m en 
                 </div>
                 <div style={{ color: '#333', fontSize: '0.95em', marginTop: '6px', fontWeight: '500' }}>
                   {matchedProg ? `${matchedProg.compagnie} : ${matchedProg.ville} (${matchedProg.heure})` : "Compagnie et provenance en cours d'identification..."}
-                  {/* Nouveaux Badges Dynamiques */}
                   <div style={{ marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px', fontSize: '0.9em' }}>
                     <span style={{ padding: '4px 8px', background: '#333', color: '#fff', borderRadius: '4px', fontWeight: 'bold' }}>
                       {getPhaseDeVol(volLivePrincipal)}
@@ -377,26 +380,20 @@ L'algorithme isole l'avion le plus pertinent via un plafond adaptatif (1500m en 
               </div>
             )}
           </div>
-          
+
           {volLivePrincipal && (
             <div style={{ backgroundColor: '#c0392b', color: 'white', borderRadius: '4px', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '15px' }}>
-              <span style={{ fontSize: '1.05em', fontWeight: 'bold' }}>{volLivePrincipal.altitude} / {volLivePrincipal.vitesse} kts</span>
+              <span style={{ fontSize: '1.05em', fontWeight: 'bold' }}>{volLivePrincipal.altM || volLivePrincipal.altitude} / {volLivePrincipal.vitesse} kts</span>
               <span style={{ fontSize: '0.95em', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{getPisteFromCap(volLivePrincipal.cap)}</span>
             </div>
           )}
         </div>
 
+        {/* PROGRAMME DU JOUR */}
         <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <div style={{ fontWeight: 'bold', color: '#0f2042', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '1em' }}>
-              📅 Programme du jour <Tooltip content={`Quand un vol est-il validé "✓ Détecté" ?
-Le système associe l'avion radar au programme officiel selon 3 règles :
-1) Trajectoire : Un avion qui atterrit ne peut pas valider un décollage.
-2) Identité : L'algorithme traduit les codes commerciaux (IATA) en codes radar (OACI).
-3) Déduction : Si les numéros diffèrent (fréquent pour les low-cost), le système valide le vol de la bonne compagnie dont l'heure prévue est la plus proche (tolérance 2h30).
-
-Que signifie le score de Performance ?
-Moyenne cumulée depuis le lancement. Elle indique la proportion de vols prévus ayant été formellement "vus" sur le radar. Les % manquants s'expliquent par les zones d'ombre de couverture radio.`} /> <span style={{ fontSize: '0.85em', color: '#7f8c8d', fontWeight: 'normal' }}>(Départs 🛫 / Arrivées 🛬)</span>
+              📅 Programme du jour <Tooltip content={`Explication des statuts...`} /> <span style={{ fontSize: '0.85em', color: '#7f8c8d', fontWeight: 'normal' }}>(Départs 🛫 / Arrivées 🛬)</span>
             </div>
             <div style={{ display: 'flex', gap: '6px' }}>
               <span style={{ fontSize: '0.75em', padding: '3px 8px', backgroundColor: '#e1f5fe', color: '#0288d1', borderRadius: '4px', fontWeight: 'bold' }}>{totalPrevus} prévus</span>
@@ -407,7 +404,7 @@ Moyenne cumulée depuis le lancement. Elle indique la proportion de vols prévus
               <span style={{ fontSize: '0.75em', padding: '3px 8px', backgroundColor: '#fff3e0', color: '#f57c00', borderRadius: '4px', fontWeight: 'bold' }}>Performance : {scoreGlobal}%</span>
             </div>
           </div>
-          
+
           {volsPrevus.length === 0 ? (
             <p style={{ color: '#999', fontSize: '0.9em', fontStyle: 'italic', textAlign: 'center', margin: '20px 0' }}>Aucun vol prévu trouvé.</p>
           ) : (
@@ -428,22 +425,30 @@ Moyenne cumulée depuis le lancement. Elle indique la proportion de vols prévus
                     const isCancelled = statutVol.toLowerCase().includes('annulé') || statutVol.toLowerCase().includes('cancel');
                     const isAlert = statutVol.toLowerCase().includes('retard') && !isCancelled;
                     const isDepart = v.type?.toLowerCase().includes('départ');
+
+                    const estConfirme = v.detecte === true || v.detecte === "true" || v.detecte === 2;
+                    const isLiveMatch = matchedProg && v.vol === matchedProg.vol && v.heure === matchedProg.heure;
+                    const isInMemory = preDetectesList.includes(`${v.vol}_${v.heure}`);
+                    const estPreDetecte = (isLiveMatch || isInMemory) && !estConfirme;
                     
+                    // SURLIGNAGE EN DIRECT : uniquement si l'avion est EN DIRECT sur le radar (isLiveMatch) ou CONFIRMÉ
+                    const aMiseEnEvidence = isLiveMatch || estConfirme;
+
                     const fondLigne = isCancelled ? '#f1f2f6' : (isDepart ? '#fff3e0' : '#e8f5e9');
                     const isTarget = (i === targetIndex);
                     const isScrollTarget = (i === scrollIndex);
 
                     return (
-                      <tr 
-                        key={i} 
+                      <tr
+                        key={i}
                         id={isScrollTarget ? 'ligne-vol-scroll-cible' : undefined}
-                        style={{ 
-                          borderBottom: '2px solid #fff', 
-                          backgroundColor: (matchedProg && v.vol === matchedProg.vol) ? '#ffebee' : fondLigne,
-                          borderLeft: (matchedProg && v.vol === matchedProg.vol) ? '5px solid #e74c3c' : 'none',
-                          transition: 'all 0.3s ease', 
+                        style={{
+                          borderBottom: '2px solid #fff',
+                          backgroundColor: aMiseEnEvidence ? '#ffebee' : fondLigne,
+                          borderLeft: aMiseEnEvidence ? '5px solid #e74c3c' : 'none',
+                          transition: 'all 0.3s ease',
                           opacity: isCancelled ? 0.6 : 1,
-                          outline: isTarget ? '2px solid #1a73e8' : 'none',
+                          outline: 'none',
                           outlineOffset: '-2px'
                         }}
                       >
@@ -454,13 +459,15 @@ Moyenne cumulée depuis le lancement. Elle indique la proportion de vols prévus
                           </span>
                         </td>
                         <td style={{ padding: '4px 8px' }}>
-                          <strong style={{ color: isCancelled ? '#7f8c8d' : '#0f2042', textDecoration: isCancelled ? 'line-through' : 'none' }}>{v.vol}</strong> 
+                          <strong style={{ color: isCancelled ? '#7f8c8d' : '#0f2042', textDecoration: isCancelled ? 'line-through' : 'none' }}>{v.vol}</strong>
                           <span style={{ color: '#7f8c8d', marginLeft: '6px', fontSize: '0.9em' }}>{v.compagnie}</span>
                         </td>
                         <td style={{ padding: '4px 8px', textTransform: 'uppercase', textDecoration: isCancelled ? 'line-through' : 'none', color: '#444' }}>{v.ville}</td>
                         <td style={{ padding: '4px 8px', textAlign: 'right' }}>
-                          {v.detecte === true || v.detecte === "true" ? (
-                            <span style={{ color: '#2ecc71', fontWeight: 'bold', fontSize: '0.95em' }}>✓ Détecté</span>
+                          {estConfirme ? (
+                            <span style={{ color: '#2ecc71', fontWeight: 'bold', fontSize: '0.95em' }}>🟢 Détection confirmée</span>
+                          ) : estPreDetecte ? (
+                            <span style={{ color: '#e67e22', fontWeight: 'bold', fontSize: '0.95em' }}>🟠 Pré-détecté</span>
                           ) : (
                             <span style={{ color: isAlert || isCancelled ? '#e74c3c' : '#666', fontWeight: isAlert || isCancelled ? 'bold' : 'normal' }}>
                               {statutVol || 'Attendu'}
@@ -477,15 +484,11 @@ Moyenne cumulée depuis le lancement. Elle indique la proportion de vols prévus
         </div>
       </div>
 
+      {/* CARTE ET TRAFIC REGIONAL */}
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.1fr', gap: '20px', marginBottom: '20px' }}>
-        
         <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
           <div style={{ fontWeight: 'bold', color: '#0f2042', marginBottom: '12px', fontSize: '1em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            🧭 Carte de Suivi Radar <Tooltip content={`Comment lire cette carte ?
-La carte affiche tout le trafic capté dans un rayon de 15 km. Les lignes en pointillés représentent l'alignement des deux pistes de Bordeaux (05/23 en bleu, 11/29 en rouge). 
-
-Pourquoi certains avions sont en rouge ?
-L'algorithme analyse l'altitude et la distance de chaque avion. Ceux marqués en rouge sont identifiés comme des "mouvements locaux" (ils atterrissent ou décollent de LFBD), contrairement aux autres avions qui ne font que survoler la zone en haute altitude.`} /> <span style={{ fontSize: '0.85em', color: '#7f8c8d', fontWeight: 'normal' }}>(Temps Réel)</span>
+            🧭 Carte de Suivi Radar <Tooltip content={`Trafic dans un rayon de 15km`} /> <span style={{ fontSize: '0.85em', color: '#7f8c8d', fontWeight: 'normal' }}>(Temps Réel)</span>
           </div>
           <div style={{ height: '350px', width: '100%', borderRadius: '6px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
             <MapContainer center={[44.8283, -0.7156]} zoom={11} style={{ height: '100%', width: '100%', zIndex: 1 }}>
@@ -500,7 +503,7 @@ L'algorithme analyse l'altitude et la distance de chaque avion. Ceux marqués en
                       <div style={{ textAlign: 'center', fontSize: '0.85em' }}>
                         <strong style={{ fontSize: '1.2em', color: '#1a73e8' }}>{avion.callsign}</strong><br/>
                         <span style={{ color: '#666' }}>Type: {avion.type}</span><br/><hr style={{ margin: '5px 0', border: 'none', borderTop: '1px solid #eee' }}/>
-                        <strong>Alt:</strong> {avion.altitude}<br/><strong>Vit:</strong> {avion.vitesse} kts<br/><strong>Cap:</strong> {avion.cap}°
+                        <strong>Alt:</strong> {avion.altM || avion.altitude}<br/><strong>Vit:</strong> {avion.vitesse} kts<br/><strong>Cap:</strong> {avion.cap}°
                       </div>
                     </Popup>
                   </Marker>
@@ -512,30 +515,29 @@ L'algorithme analyse l'altitude et la distance de chaque avion. Ceux marqués en
 
         <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <div style={{ fontWeight: 'bold', color: '#0f2042', fontSize: '1em', display: 'flex', alignItems: 'center', gap: '6px' }}>🛫 Trafic Régional <Tooltip content="Comment lire cette liste ?\nElle recense l'ensemble des avions détectés en temps réel dans un rayon de 15 km.\n\nPourquoi ces couleurs ?\nLes lignes sur fond rose identifient le trafic local (mouvements au sol, décollages ou approches sur LFBD via la fonction isBordeauxMovement). Les lignes blanches affichent le trafic en transit." /></div>
+            <div style={{ fontWeight: 'bold', color: '#0f2042', fontSize: '1em', display: 'flex', alignItems: 'center', gap: '6px' }}>🛫 Trafic Régional</div>
             <span style={{ fontSize: '0.75em', padding: '3px 8px', backgroundColor: '#e8f5e9', color: '#2e7d32', borderRadius: '4px', fontWeight: 'bold' }}>● Antenne ACTIVE ✓</span>
           </div>
-          
+
           <div style={{ flex: 1, overflowY: 'auto', maxHeight: '350px', paddingRight: '2px' }}>
             {vols.length === 0 ? (
               <p style={{ color: '#999', fontSize: '0.9em', fontStyle: 'italic', textAlign: 'center', marginTop: '100px' }}>Aucun avion détecté sur la zone.</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {vols.map((avion, index) => {
-                  const isLocal = isBordeauxMovement(avion);
                   const isActive = volLivePrincipal && volLivePrincipal.callsign === avion.callsign;
                   const fondLigne = isActive ? '#fdf2f2' : '#fff';
                   const couleurTexte = isActive ? '#e74c3c' : '#1a73e8';
 
                   return (
-                    <div 
-                      key={index} 
-                      style={{ 
-                        padding: '10px 12px', 
-                        backgroundColor: fondLigne, 
+                    <div
+                      key={index}
+                      style={{
+                        padding: '10px 12px',
+                        backgroundColor: fondLigne,
                         borderBottom: '1px solid #eee',
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
+                        display: 'flex',
+                        justifyContent: 'space-between',
                         alignItems: 'center',
                         fontSize: '0.85em'
                       }}
@@ -547,7 +549,7 @@ L'algorithme analyse l'altitude et la distance de chaque avion. Ceux marqués en
                         )}
                       </div>
                       <div style={{ textAlign: 'right', color: '#333' }}>
-                        <span>Alt: <strong>{avion.altitude}</strong></span>
+                        <span>Alt: <strong>{avion.altM || avion.altitude}</strong></span>
                         <span style={{ color: '#7f8c8d', margin: '0 6px' }}>|</span>
                         <span>{avion.vitesse} kt</span>
                       </div>
@@ -560,9 +562,9 @@ L'algorithme analyse l'altitude et la distance de chaque avion. Ceux marqués en
         </div>
       </div>
 
+      {/* STATISTIQUES */}
       <section style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginBottom: '20px' }}>
-          
           <h2 style={{ margin: 0, fontSize: '1.1em', fontWeight: 'bold', color: '#0f2042', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             ⚙️ ANALYSE DES STATISTIQUES SUR LA PÉRIODE :
             {historiqueStats.collecte_initiee && (
@@ -571,7 +573,7 @@ L'algorithme analyse l'altitude et la distance de chaque avion. Ceux marqués en
               </span>
             )}
           </h2>
-          
+
           <div style={{ display: 'flex', gap: '6px' }}>
             {[['jour', "Aujourd'hui"], ['semaine', '7 Jours'], ['mois', '30 Jours'], ['annee', '1 Année']].map(([key, label]) => (
               <button key={key} onClick={() => setPeriode(key)} style={{ padding: '6px 14px', fontSize: '0.8em', borderRadius: '4px', border: '1px solid #1a73e8', cursor: 'pointer', backgroundColor: periode === key ? '#1a73e8' : '#fff', color: periode === key ? '#fff' : '#1a73e8', fontWeight: 'bold' }}>{label}</button>
@@ -583,7 +585,6 @@ L'algorithme analyse l'altitude et la distance de chaque avion. Ceux marqués en
           <p style={{ fontStyle: 'italic', color: '#999', margin: 0, backgroundColor: '#f9f9f9', padding: '15px', borderRadius: '8px' }}>Aucun vol enregistré sur cette période.</p>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.9fr', gap: '40px' }}>
-            
             <div>
               <h3 style={{ fontSize: '0.85em', fontWeight: 'bold', color: '#0f2042', textTransform: 'uppercase', margin: '0 0 15px 0', letterSpacing: '0.5px' }}>
                 🗺️ Répartition globale par Axe
@@ -618,10 +619,7 @@ L'algorithme analyse l'altitude et la distance de chaque avion. Ceux marqués en
               <h3 style={{ fontSize: '0.85em', fontWeight: 'bold', color: '#0f2042', textTransform: 'uppercase', margin: '0 0 15px 0', letterSpacing: '0.5px' }}>
                 📈 Sens d'utilisation (QFU)
               </h3>
-              
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                
-                {/* BLOC AXE 05/23 */}
                 <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
                   <div style={{ textAlign: 'center', fontWeight: 'bold', color: '#1a73e8', marginBottom: '12px', fontSize: '0.85em', textTransform: 'uppercase' }}>Sens d'approche Axe 05/23</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -642,7 +640,6 @@ L'algorithme analyse l'altitude et la distance de chaque avion. Ceux marqués en
                   </div>
                 </div>
 
-                {/* BLOC AXE 11/29 */}
                 <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
                   <div style={{ textAlign: 'center', fontWeight: 'bold', color: '#e74c3c', marginBottom: '12px', fontSize: '0.85em', textTransform: 'uppercase' }}>Sens d'approche Axe 11/29</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -662,18 +659,17 @@ L'algorithme analyse l'altitude et la distance de chaque avion. Ceux marqués en
                     })}
                   </div>
                 </div>
-                
               </div>
+
               <div style={{ textAlign: 'right', marginTop: '15px', fontSize: '0.8em', color: '#7f8c8d', fontWeight: '500' }}>
                 Total sur la période : <strong style={{ color: '#0f2042' }}>{historiqueStats.total}</strong> mouvements analysés.
               </div>
             </div>
-
           </div>
         )}
       </section>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
