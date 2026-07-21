@@ -175,3 +175,179 @@ La fonction `isBordeauxMovement(avion)` agit comme un filtre de mise en évidenc
 2. **ZÉRO SUPPOSITION SYNTAXIQUE :** Toute tentative de code nouveau doit impérativement éviter les erreurs d'accents, de typage ou de casse (ex: "décollage" vs "decollage"). Tu dois D'ABORD demander à lire les fichiers et le code du projet pour utiliser la nomenclature exacte avant de pondre le moindre code.
 3. **VÉRIFICATION DE L'EXISTANT :** Tu ne dois jamais coder de choses nouvelles sans vérifier que la logique demandée n'est pas déjà présente. Ton réflexe systématique doit être de demander à voir le code existant avant d'en écrire un nouveau.
 4. **NOMENCLATURE RÉELLE :** Tu dois demander à voir comment s'appellent les fichiers, les variables ou les tables de la base de données existantes avant de vouloir en créer de nouvelles ou d'inventer des noms au hasard.
+
+
+--- 
+## 🧠 Mémoire Projets & Notes Consolidées
+
+### Content from project_memory.md:
+
+---
+### Session du 19 juillet 2026 : Correction des inversions et Mode Kiosque
+
+#### 1. Inversion Systémique Arrivée/Départ (Backend)
+* **Problème :** Le tableau "Programme du jour" affichait des départs à la place des arrivées.
+* **Cause :** À la ligne 185 de `backend/api.py`, la règle d'attribution était inversée : `"type": "départ" if sens == "in" else "arrivée"`.
+* **Correction :** Rétablissement de la logique nominale : `"type": "arrivée" if sens == "in" else "départ"`. Nettoyage du fichier `scraped_cache.json` et redémarrage du processus.
+
+#### 2. Moteur de Vérité Physique (Frontend)
+* **Problème :** Les avions en approche en retard s'associaient à des lignes de "Départ" car la ligne d'arrivée théorique avait été purgée du tableau avec le temps qui passe.
+* **Correction :** Réécriture de la logique de matching dans `setAvionClique` (`App.jsx`) :
+    * **Priorité absolue à la physique :** Interdiction stricte (malus de -1000 points) de lier un avion qui descend physiquement (`txVert < 0`) à une ligne de décollage théorique.
+    * **Tolérance aux retards :** Extension de la recherche à 3 heures dans le passé pour récupérer les lignes masquées.
+    * **Auto-Correction :** Le système réécrit le type de vol en direct à l'écran si l'aéroport envoie une donnée erronée, avec la mention `"Corrigé via Radar Live"`.
+
+#### 3. Automatisation du Mode Kiosque (Frontend)
+* **Problème :** Le dashboard devait cibler, afficher et scroller automatiquement sur l'avion en alerte mouvement sans intervention manuelle.
+* **Correction :** Injection d'un hook `useEffect` basé sur `vols.find(isBordeauxMovement)` :
+    * Déclenchement automatique de `setAvionClique` sur l'avion en mouvement dès que l'alerte s'active.
+    * **Effets visuels synchronisés :** Icône de la carte en orange vif, ligne sélectionnée dans "Trafic Régional", et centrage persistant au milieu du tableau "Programme du jour".
+    * **Persistance :** Les auto-scrolls génériques liés au rafraîchissement des données sont gelés tant que l'alerte pilote l'affichage. Le système se met en pause si l'utilisateur clique manuellement ailleurs.
+
+#### 4. Résolution des Erreurs de Build (Frontend)
+* **React is not defined :** Résolu en injectant explicitement `import React from 'react';` au sommet de `App.jsx`.
+* **tousLesVols is not defined :** Correction du hook pour cibler la variable d'état réelle de l'application (`vols`).
+
+## Mise à jour (Juillet 2026) : Résolution de bugs critiques et Automatisation
+- **Bug du Port 8000 bloqué** : Un ancien processus Uvicorn tournait en tâche de fond (zombie) rendant la commande `pkill -f api.py` inefficace. Remplacé par `pkill -9 -f uvicorn` pour tuer les processus proprement.
+- **Création du script d'autoréparation** : Création de `redemarrer_backend.sh` qui force la fermeture de l'API, supprime le cache de la veille (`scraped_cache.json`) et relance l'API.
+- **Automatisation nocturne (Cron)** : Mise en place d'une tâche Cron `0 3 * * *` pour exécuter le script de redémarrage tous les jours à 03h00 du matin et repartir sur une base vierge sans intervention manuelle.
+- **Décrochage d'affichage Radar (Vol sans destination)** : Le couplage radar-programme plantait pour les vols avec un fort retard. La limite `diff_sec` dans `api.py` a été augmentée de `9000` (2h30) à `21600` (6h) pour garder l'info de provenance/destination (ex: Marseille) même sur les gros retards de fin de journée.
+- **Erreur 500 (UnboundLocalError)** : L'API plantait lors du rechargement à cause d'un import de `timedelta` mal scopé dans `get_vols_expected`. Corrigé en injectant `from datetime import timedelta` juste avant son utilisation à la ligne 317.
+
+## Mise à jour (20 Juillet 2026 à 02:00) : Logique physique des pistes et correction API
+- **Logique Métier des Pistes** : Changement du mode de comptage des mouvements. Abandon de la logique aéronautique officielle au profit d'une logique physique (basée sur la position du toucher/décollage des roues sur le bitume).
+  - Règle appliquée : Si un avion atterrit sur une extrémité de piste (ex: 05), les décollages sur cet axe se font nécessairement vers l'autre extrémité (ex: 23).
+  - Inversion codée dans `api.py` (`get_stats_historique`) : Pour tout décollage détecté, le numéro de piste est basculé vers son opposé sur l'axe (05 <-> 23, 11 <-> 29).
+- **Résolution de Bug SyntaxError** : L'injection du code de bascule a généré un double `else:` (erreur 500 / "Unexpected token"). Corrigé via la suppression des lignes redondantes avec `sed -i '436,437d'` et redémarrage du backend.
+- **Résultat** : Les sous-compteurs de pistes (Décollages/Atterrissages) fonctionnent désormais correctement et croisent parfaitement l'axe et le sens.
+
+## Mise à jour (20 Juillet 2026, 02h25) : UI/UX et Audit de fiabilité
+- **Frontend (React)** : Injection réussie des infobulles explicatives pour les blocs "Répartition globale par Axe" et "Sens d'utilisation (QFU)" directement dans le build minifié de production. (Solution technique : utilisation d'une Regex et de `chr(39)` dans le script Python pour contourner les conflits d'échappement Bash/Python sur les apostrophes).
+- **Audit des tâches planifiées (CRON)** : Vérification de la fiabilité du système au basculement de minuit. Confirmation que l'architecture est robuste : les requêtes API redémarrent bien à 00:00:00 (Fuseau Paris) pour les statistiques, mais le reset du serveur est décalé à 03h00 du matin pour sécuriser le suivi live des atterrissages et décollages tardifs.
+
+## Mise à jour (20 Juillet 2026, 02h42) : Passage au modèle de "Vol Unique"
+- **Backend (api.py)** : Correction de la fonction `get_stats_historique`. Remplacement du regroupement par minute par un décompte de `DISTINCT callsign` pour éliminer la multiplication artificielle des chiffres. Réparation d'une erreur d'indentation et de syntaxe de la ligne 395.
+- **Frontend (Assets JS)** : Script de nettoyage dynamique appliqué sur l'ensemble des fichiers `index-*.js` pour remplacer définitivement les termes "mouvements" par "vols" sur l'interface graphique (Titres, alertes et compteurs d'axes). Validation des modifications après purge du cache navigateur.
+
+## Mise à jour (20 Juillet 2026, 10h00) : Fiabilisation absolue du moteur de vérité
+- **Frontend (App.jsx) - Sécurité de matching croisé** : Correction d'une faille où des avions au sol ou en accélération (txVert = 0) étaient associés à des vols de sens opposé en raison d'une lecture naïve du tableau commercial. Implémentation d'un malus brutal de `-2000 points` forçant la stricte ségrégation Arrivée / Départ du radar.
+- **Backend (detector.py) - Filtre Spatio-Temporel** : Abandon du simple filtre géométrique pour les pistes croisées (11/29 vs 05/23) responsable de nombreux faux positifs lors du roulage au sol des avions. Création d'une machine à états : tout mouvement sur piste est désormais mis en attente (`vols_en_attente`), et n'est validé (`INSERT INTO vols_detectes`) que s'il est corrélé à une détection confirmée en vol (`> 200 pieds`) dans une fenêtre de 5 minutes.
+
+
+### Content from memory.md:
+# Context Technique & Architecture - Stats des Pistes (LFBD)
+
+## 1. Detection Radar (`backend/detector.py`)
+- **Pistes Principales (05/23)** :
+  - Atterrissage : Distance <= 6.0 km, Altitude <= 600 m, Cap +/- 15°.
+  - Décollage : Distance <= 2.5 km, Altitude <= 350 m, Cap +/- 30° (pour intégrer les virages rapides / SIDs) si Taux Vertical > 100 ft/min.
+- **Pistes Secondaires (11/29)** :
+  - Atterrissage : Distance <= 4.0 km, Altitude <= 400 m, Cap +/- 15°.
+  - Décollage : Distance <= 2.5 km, Altitude <= 350 m, Cap +/- 30° si Taux Vertical > 100 ft/min.
+
+## 2. Engine de Matching V2 (`backend/api.py`)
+- **Table de conversion Compagnies (`AIRLINES_MAP`)** : Normalisation ICAO / IATA (ex: `EJU`/`EZY`/`U2` -> `EASYJET`).
+- **Filtres Stricts** :
+  - Incompatibilité Sens (Arrivée vs Décollage).
+  - Incompatibilité Compagnie (Bloque le matching entre compagnies différentes).
+- **Matrice de Scoring & Attribution Globale** :
+  - Match Compagnie : +100 pts
+  - Match Chiffres N° de Vol / Callsign : +150 pts (exact) / +80 pts (partiel)
+  - Match Ville / Route : +120 pts
+  - Pénalité Temps : -1 pt par tranche de 2 minutes d'écart
+  - Tri global par score décroissant pour éviter les affectations opportunistes.
+
+## 3. Alerte Live Frontend (`frontend/src/App.jsx`)
+- Fonction `isBordeauxMovement` alignée sur les plafonds backend (Max 600m général, Max 400m pour axe 11/29).
+
+## Synthèse des modifications (Matching & QFU) - 20/07/2026
+
+### 1. Algorithme de Matching Intelligent (`api.py`)
+- **Ingestion BDD complète** : Ajout des champs `callsign`, `origine` et `destination` dans la structure du dictionnaire `vols_detectes_du_jour`.
+- **Table de correspondance des compagnies (IATA ↔ OACI)** : Implémentation du dictionnaire `CIE_MAP` (`U2` ↔ `EJU/EZY`, `V7` ↔ `VOE`, `TO` ↔ `TVF`, `AF` ↔ `AFR`, `KL` ↔ `KLM`...) pour l'association des indicatifs radio ATC avec le planning commercial.
+- **Fenêtre temporelle stricte** : Association autorisée uniquement si l'écart de temps est compris entre **-30 min** (avance) et **+3 heures** (retard) par rapport à l'horaire prévu (`dt_prevue`).
+- **Correction Timezone** : Normalisation de la conversion des timestamps BDD en heure locale `Europe/Paris` sans passage parasite par UTC (suppression du décalage de +2h).
+- **Matching multi-critères** : Croisement du numéro de vol, code compagnie, sens de mouvement et ville de provenance/destination avec système d'éligibilité et scoring.
+
+### 2. Statistiques de Pistes & Logique Croisée QFU (`get_stats_historique`)
+- **Règle physique de détection des pistes** :
+  - *Atterrissage* : Piste attribuée selon le tronçon du **premier contact des roues au sol** (touchdown).
+  - *Décollage* : Piste attribuée selon le tronçon du **dernier contact des roues au sol** avant l'envol (rotation/liftoff).
+- **Logique croisée des portails radar (`portail_nom`)** :
+  - **Portail 05** + Atterrissage → **Piste 05** | Portail 05 + Décollage → **Piste 23**
+  - **Portail 23** + Atterrissage → **Piste 23** | Portail 23 + Décollage → **Piste 05**
+  - **Portail 11** + Atterrissage → **Piste 11** | Portail 11 + Décollage → **Piste 29**
+  - **Portail 29** + Atterrissage → **Piste 29** | Portail 29 + Décollage → **Piste 11**
+- **Calcul des pourcentages par axe** : Normalisation des pourcentages de chaque piste relativement à la somme globale de son propre axe (05/23 ou 11/29).
+
+
+### Content from MEMORY.md:
+# Contexte du Projet : Stats des Pistes (LFBD / Bordeaux)
+
+## 1. Directives de Développement & Exigences
+- **Pérennité & Automatisation** : Uniquement des solutions automatisées et pérennes. Interdiction des corrections manuelles, ponctuelles ou "one-shot".
+- **Commandes Clé en Main** : Fournir exclusivement des commandes terminal/bash exécutoires complètes. Aucune édition manuelle de fichier (ex: `nano`, `vim`).
+- **Niveau d'Exigence** : Code propre, structuré avec séparation des responsabilités, testé (TDD) et directement opérationnel.
+
+## 2. Architecture Générale (Backend FastAPI + SQLite)
+- **Scripts Principaux** : `api.py` (FastAPI), `live_radar.py` (Flux ADS-B), `detector.py` (Analyse croisée), `check_aerovision.py` (Scraper Playwright 15min).
+- **Moteurs Logiques Isolés (Fonctions Pures)** :
+  - `flight_engine.py` : Qualification de phase (Priorité absolue au Programme > Télémétrie), Rapprochement IATA/ICAO (Regex intelligente 2/3 lettres), Filtre anti-bruit (Hélicos/Secours).
+  - `geometry_engine.py` : Calcul mathématique strict (Cross-Track Distance). Tolérance d'axe de 400m, Heading Gate (Cap ±25°), distance max 25km. Fini les conditions de zones approximatives.
+- **Middleware API** : `PrioritySortMiddleware` intégré à `api.py`. Intercepte de façon transparente les flux JSON pour trier les listes de vols (Priorité 1: APPROCHE/DÉCOLLAGE, Priorité 2: EN VOL, Priorité 3: SOL) sans corrompre les schémas Pydantic.
+- **Tests** : Suite `pytest` (`test_engines.py`) garantissant la non-régression mathématique, géométrique et logique.
+
+## 3. Règles Métier Validées
+- **Qualification de Phase (Hiérarchie stricte d'évaluation)** :
+  1. Sol (Vitesse < 35 kts & Alt < 100 ft) -> ROULAGE / SOL.
+  2. Présence dans le programme Aérovision (ARRIVEE/DEPART) -> APPROCHE/ATTERRISSAGE ou DECOLLAGE. (Court-circuite la télémétrie).
+  3. Télémétrie pure (V/S < -150 ft/min -> APPROCHE, V/S > +150 ft/min -> DECOLLAGE).
+  4. Neutre -> EN VOL.
+- **Rapprochement IATA / ICAO** : Extraction du préfixe via Regex `^([A-Z]{3}|[A-Z0-9]{2})(\d.*)$` et croisement via dictionnaire d'équivalence (ex: U2/EJU/EZY).
+
+## 4. Commandes Utiles
+- **Tests (Validation Architecture)** : `/home/ubuntu/stats_des_pistes/backend/venv/bin/python3 -m pytest /home/ubuntu/stats_des_pistes/backend/test_engines.py -v`
+- **Redémarrer le backend** : `/home/ubuntu/stats_des_pistes/redemarrer_backend.sh`
+- **Exécuter la capture Aérovision manuellement** : `/home/ubuntu/stats_des_pistes/backend/venv/bin/python3 /home/ubuntu/stats_des_pistes/backend/check_aerovision.py`
+
+## 5. Règle d'Or Absolue : Rigueur Chirurgicale
+- Interdiction stricte des scripts `sed`/regex globaux aveugles (risque de corruption JS/SQL).
+- Les modifications de code doivent être d'une précision absolue (cibler uniquement les lignes concernées).
+- Analyse d'impact obligatoire sur toute la stack avant toute proposition de script.
+
+
+### Content from ai-context.md:
+# Contexte du Projet : Stats des Pistes (LFBD / Bordeaux)
+
+## 1. Directives de Développement & Exigences
+- **Pérennité & Automatisation** : Uniquement des solutions automatisées et pérennes. Interdiction des corrections manuelles, ponctuelles ou "one-shot".
+- **Commandes Clé en Main** : Fournir exclusivement des commandes terminal/bash exécutoires complètes. Aucune édition manuelle de fichier (ex: `nano`, `vim`).
+- **Niveau d'Exigence** : Code propre, structuré avec séparation des responsabilités, testé (TDD) et directement opérationnel.
+
+## 2. Architecture Générale (Backend FastAPI + SQLite)
+- **Scripts Principaux** : `api.py` (FastAPI), `live_radar.py` (Flux ADS-B), `detector.py` (Analyse croisée), `check_aerovision.py` (Scraper Playwright 15min).
+- **Moteurs Logiques Isolés (Fonctions Pures)** :
+  - `flight_engine.py` : Qualification de phase (Priorité absolue au Programme > Télémétrie), Rapprochement IATA/ICAO (Regex intelligente 2/3 lettres), Filtre anti-bruit (Hélicos/Secours).
+  - `geometry_engine.py` : Calcul mathématique strict (Cross-Track Distance). Tolérance d'axe de 400m, Heading Gate (Cap ±25°), distance max 25km. Fini les conditions de zones approximatives.
+- **Middleware API** : `PrioritySortMiddleware` intégré à `api.py`. Intercepte de façon transparente les flux JSON pour trier les listes de vols (Priorité 1: APPROCHE/DÉCOLLAGE, Priorité 2: EN VOL, Priorité 3: SOL) sans corrompre les schémas Pydantic.
+- **Tests** : Suite `pytest` (`test_engines.py`) garantissant la non-régression mathématique, géométrique et logique.
+
+## 3. Règles Métier Validées
+- **Qualification de Phase (Hiérarchie stricte d'évaluation)** :
+  1. Sol (Vitesse < 35 kts & Alt < 100 ft) -> ROULAGE / SOL.
+  2. Présence dans le programme Aérovision (ARRIVEE/DEPART) -> APPROCHE/ATTERRISSAGE ou DECOLLAGE. (Court-circuite la télémétrie).
+  3. Télémétrie pure (V/S < -150 ft/min -> APPROCHE, V/S > +150 ft/min -> DECOLLAGE).
+  4. Neutre -> EN VOL.
+- **Rapprochement IATA / ICAO** : Extraction du préfixe via Regex `^([A-Z]{3}|[A-Z0-9]{2})(\d.*)$` et croisement via dictionnaire d'équivalence (ex: U2/EJU/EZY).
+
+## 4. Commandes Utiles
+- **Tests (Validation Architecture)** : `/home/ubuntu/stats_des_pistes/backend/venv/bin/python3 -m pytest /home/ubuntu/stats_des_pistes/backend/test_engines.py -v`
+- **Redémarrer le backend** : `/home/ubuntu/stats_des_pistes/redemarrer_backend.sh`
+- **Exécuter la capture Aérovision manuellement** : `/home/ubuntu/stats_des_pistes/backend/venv/bin/python3 /home/ubuntu/stats_des_pistes/backend/check_aerovision.py`
+
+## 5. Règle d'Or Absolue : Rigueur Chirurgicale
+- **Interdiction formelle des remplacements en masse** : Ne JAMAIS utiliser de `sed` ou de regex globales aveugles pour modifier du texte ou des variables. Cela corrompt la logique interne (JS, SQL, JSON).
+- **Chirurgie uniquement** : Toute modification de code doit cibler avec une précision absolue la ligne ou la fonction concernée. Si une modification purement visuelle (texte) est demandée, cibler exclusivement le code HTML/UI, jamais le backend ou les clés de données.
+- **Analyse d'impact obligatoire** : L'IA doit systématiquement évaluer l'effet domino de ses propositions sur l'ensemble de la stack (FastAPI, Pydantic, SQLite, Vanilla JS) avant de soumettre un correctif. Tolérance zéro pour le code destructif.
+

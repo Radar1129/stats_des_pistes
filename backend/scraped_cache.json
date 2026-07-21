@@ -685,7 +685,7 @@
     "ville": "TUNIS-CARTHAGE",
     "vol": "TU628",
     "compagnie": "Tunisair",
-    "statut": "Prévu à 19:44"
+    "statut": "Atterri à 19:49"
   },
   {
     "type": "Départ",
@@ -709,7 +709,7 @@
     "ville": "MADRID-ADOLFO SUAREZ",
     "vol": "IB1203 / AA8623 / CX1874 / AY4773 / LA1689 / QR5375",
     "compagnie": "Iberia / AMERICAN AIRLINES / CATHAY PACIFIC / Finnair / LAN AIRLINES / QATAR AIRWAYS",
-    "statut": "Prévu à 19:43"
+    "statut": "Atterri à 19:44"
   },
   {
     "type": "Départ",
@@ -805,7 +805,7 @@
     "ville": "LONDRES-LUTON",
     "vol": "U22424",
     "compagnie": "easyJet",
-    "statut": "Embarquement :Terminal billi - porte 45"
+    "statut": "Embarquement :Terminal billi"
   },
   {
     "type": "Arrivée",
@@ -845,7 +845,7 @@
     "ville": "ALGER-HOUARI BOUMEDIENE",
     "vol": "AH1190",
     "compagnie": "Air Algérie",
-    "statut": "Prévu à 19:42"
+    "statut": "Atterri à 19:42"
   },
   {
     "type": "Arrivée",
@@ -853,7 +853,7 @@
     "ville": "FIGARI-SUD CORSE",
     "vol": "V72433",
     "compagnie": "Volotea",
-    "statut": "Retardé"
+    "statut": "Prévu à 21:04"
   },
   {
     "type": "Arrivée",
@@ -861,7 +861,7 @@
     "ville": "NAPLES-CAPODICHINO",
     "vol": "V72447",
     "compagnie": "Volotea",
-    "statut": "Prévu à 19:52"
+    "statut": "Atterri à 20:01"
   },
   {
     "type": "Départ",
@@ -885,7 +885,7 @@
     "ville": "OSLO-GARDERMOEN",
     "vol": "DY1452",
     "compagnie": "Norwegian",
-    "statut": "Prévu à 20:18"
+    "statut": "Prévu à 20:07"
   },
   {
     "type": "Arrivée",
@@ -893,7 +893,7 @@
     "ville": "GENEVE-COINTRIN",
     "vol": "EZS1391",
     "compagnie": "easyJet",
-    "statut": "Prévu à 20:33"
+    "statut": "Prévu à 20:27"
   },
   {
     "type": "Départ",
@@ -933,7 +933,7 @@
     "ville": "TUNIS-CARTHAGE",
     "vol": "BJ718",
     "compagnie": "Nouvelair",
-    "statut": ""
+    "statut": "Prévu à 21:48"
   },
   {
     "type": "Arrivée",

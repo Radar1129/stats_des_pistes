@@ -441,7 +441,7 @@ L'algorithme isole l'avion le plus pertinent via un plafond adaptatif (1500m en 
                     const estPreDetecte = (isLiveMatch || isInMemory) && !estConfirme;
                     
                     // SURLIGNAGE EN DIRECT : uniquement si l'avion est EN DIRECT sur le radar (isLiveMatch) ou CONFIRMÉ
-                    const aMiseEnEvidence = isLiveMatch || estConfirme;
+                    const aMiseEnEvidence = isLiveMatch;
 
                     const fondLigne = isCancelled ? '#f1f2f6' : (isDepart ? '#fff3e0' : '#e8f5e9');
                     const isTarget = (i === targetIndex);
