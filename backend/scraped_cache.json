@@ -645,7 +645,7 @@
     "ville": "PORTO-FRANCISCO SA CARNEIRO",
     "vol": "EJU6881",
     "compagnie": "easyJet",
-    "statut": "Prévu à 15:56"
+    "statut": "Atterri à 15:54"
   },
   {
     "type": "Arrivée",
@@ -653,7 +653,7 @@
     "ville": "AMSTERDAM-SCHIPHOL",
     "vol": "KL1445",
     "compagnie": "KLM",
-    "statut": ""
+    "statut": "Annulé"
   },
   {
     "type": "Départ",
@@ -661,7 +661,7 @@
     "ville": "PORTO-FRANCISCO SA CARNEIRO",
     "vol": "EJU6882",
     "compagnie": "easyJet",
-    "statut": "Embarquement :Terminal billi"
+    "statut": "Embarquement :Terminal billi - porte 33"
   },
   {
     "type": "Départ",
@@ -677,7 +677,7 @@
     "ville": "BRISTOL",
     "vol": "U22769",
     "compagnie": "easyJet",
-    "statut": ""
+    "statut": "Retardé"
   },
   {
     "type": "Arrivée",
@@ -685,7 +685,7 @@
     "ville": "TUNIS-CARTHAGE",
     "vol": "TU628",
     "compagnie": "Tunisair",
-    "statut": ""
+    "statut": "Retardé"
   },
   {
     "type": "Départ",
@@ -693,7 +693,7 @@
     "ville": "AMSTERDAM-SCHIPHOL",
     "vol": "KL1446",
     "compagnie": "KLM",
-    "statut": "Embarquement :Hall A - porte 60"
+    "statut": ""
   },
   {
     "type": "Arrivée",
@@ -701,7 +701,7 @@
     "ville": "BARCELONE-EL PRAT",
     "vol": "VY2914 / IB5439 / LA5758 / 5269 / QR3519",
     "compagnie": "Vueling / Iberia / LAN AIRLINES / QATAR AIRWAYS",
-    "statut": ""
+    "statut": "Retardé"
   },
   {
     "type": "Arrivée",
@@ -709,7 +709,7 @@
     "ville": "MADRID-ADOLFO SUAREZ",
     "vol": "IB1203 / AA8623 / CX1874 / AY4773 / LA1689 / QR5375",
     "compagnie": "Iberia / AMERICAN AIRLINES / CATHAY PACIFIC / Finnair / LAN AIRLINES / QATAR AIRWAYS",
-    "statut": ""
+    "statut": "Retardé"
   },
   {
     "type": "Départ",
@@ -725,7 +725,7 @@
     "ville": "ORAN-AHMED BEN BELLA",
     "vol": "V72765",
     "compagnie": "Volotea",
-    "statut": ""
+    "statut": "Retardé"
   },
   {
     "type": "Arrivée",
@@ -733,7 +733,7 @@
     "ville": "MUNICH-FRANZ JOSEF STRAUSS",
     "vol": "LH2258",
     "compagnie": "Lufthansa",
-    "statut": ""
+    "statut": "Retardé"
   },
   {
     "type": "Départ",
@@ -741,7 +741,7 @@
     "ville": "MADRID-ADOLFO SUAREZ",
     "vol": "IB1204",
     "compagnie": "Iberia",
-    "statut": "Embarquement :Hall A - porte 09"
+    "statut": ""
   },
   {
     "type": "Départ",
@@ -981,7 +981,7 @@
     "ville": "ARRECIFE-LANZAROTE",
     "vol": "EJU1860",
     "compagnie": "easyJet",
-    "statut": ""
+    "statut": "Retardé"
   },
   {
     "type": "Départ",
@@ -1029,7 +1029,7 @@
     "ville": "TENERIFE-SUD",
     "vol": "EJU1852",
     "compagnie": "easyJet",
-    "statut": ""
+    "statut": "Retardé"
   },
   {
     "type": "Arrivée",
