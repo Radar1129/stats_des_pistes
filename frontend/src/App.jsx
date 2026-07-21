@@ -6,21 +6,30 @@ import './App.css'
 
 const API_BASE_URL = '';
 
-const getPlaneIcon = (cap, isLocal) => {
+const getPlaneIcon = (cap, isLocal, isPrincipal = false) => {
   const rotation = cap || 0;
-  const color = isLocal ? '#e74c3c' : '#1a73e8';
+  // Couleur Jaune Orangé très vif !
+  const color = isPrincipal ? '#ffcc00' : (isLocal ? '#e74c3c' : '#1a73e8');
+  
+  // Taille XXL (60px) pour l'alerte
+  const containerSize = isPrincipal ? 60 : 30;
+  const svgSize = isPrincipal ? 54 : 26;
+  const anchor = containerSize / 2;
+  const glow = isPrincipal ? `drop-shadow(0px 0px 10px rgba(255, 204, 0, 0.9))` : `drop-shadow(1px 1px 2px rgba(0,0,0,0.4))`;
+  
   const svgHtml = `
-    <div style="transform: rotate(${rotation}deg); transform-origin: center; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center;">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="${color}" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.4));">
+    <div style="transform: rotate(${rotation}deg); transform-origin: center; width: ${containerSize}px; height: ${containerSize}px; display: flex; justify-content: center; align-items: center;">
+      <svg width="${svgSize}" height="${svgSize}" viewBox="0 0 24 24" fill="${color}" xmlns="http://www.w3.org/2000/svg" style="filter: ${glow};">
         <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L14 19v-5.5l8 2.5z"/>
       </svg>
     </div>
   `;
   return new L.DivIcon({
     html: svgHtml,
-    className: 'custom-plane-icon',
-    iconSize: [30, 30],
-    iconAnchor: [15, 15]
+    // BYPASS CSS : On retire la classe 'custom-plane-icon' pour éviter qu'un CSS bride la taille
+    className: isPrincipal ? 'custom-plane-icon-live' : 'custom-plane-icon',
+    iconSize: [containerSize, containerSize],
+    iconAnchor: [anchor, anchor]
   });
 };
 
@@ -506,8 +515,9 @@ L'algorithme isole l'avion le plus pertinent via un plafond adaptatif (1500m en 
               <Polyline positions={axePiste1129} color="#e74c3c" weight={6} opacity={0.4} dashArray="8, 8" />
               {vols.map((avion, index) => {
                 const isLocal = isBordeauxMovement(avion);
+                const isPrincipal = volLivePrincipal && (volLivePrincipal === avion || (volLivePrincipal.callsign && avion.callsign && volLivePrincipal.callsign.trim() === avion.callsign.trim()));
                 return avion.latitude && avion.longitude ? (
-                  <Marker key={index} eventHandlers={{ click: () => setAvionClique(avion) }} position={[avion.latitude, avion.longitude]} icon={getPlaneIcon(avion.cap, isLocal)}>
+                  <Marker key={index + (isPrincipal ? "-live" : "")} zIndexOffset={isPrincipal ? 1000 : 0} eventHandlers={{ click: () => setAvionClique(avion) }} position={[avion.latitude, avion.longitude]} icon={getPlaneIcon(avion.cap, isLocal, isPrincipal)}>
                     <Popup>
                       <div style={{ textAlign: 'center', fontSize: '0.85em' }}>
                         <strong style={{ fontSize: '1.2em', color: '#1a73e8' }}>{avion.callsign}</strong><br/>
