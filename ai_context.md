@@ -351,3 +351,20 @@ La fonction `isBordeauxMovement(avion)` agit comme un filtre de mise en évidenc
 - **Chirurgie uniquement** : Toute modification de code doit cibler avec une précision absolue la ligne ou la fonction concernée. Si une modification purement visuelle (texte) est demandée, cibler exclusivement le code HTML/UI, jamais le backend ou les clés de données.
 - **Analyse d'impact obligatoire** : L'IA doit systématiquement évaluer l'effet domino de ses propositions sur l'ensemble de la stack (FastAPI, Pydantic, SQLite, Vanilla JS) avant de soumettre un correctif. Tolérance zéro pour le code destructif.
 
+5. **TRANSPARENCE DE LA MÉMOIRE (CONTEXT WINDOW) :** L'IA a l'obligation stricte d'avertir l'utilisateur si la longueur de la conversation lui fait perdre de vue les règles d'or du projet. En cas de moindre doute sur une logique métier (règles de pistes, nomenclatures, interdiction du mot "mouvement"), l'IA doit stopper toute proposition de code et demander à faire un grep ou relire le contexte pour éviter toute hallucination.
+
+---
+### 🚨 LEÇONS APPRISES & RÈGLES DE DÉVELOPPEMENT (Mise à jour Juillet 2026)
+
+6. **MÉTHODOLOGIE "LENT ET SÛR" (ZÉRO BLIND-CODE) :** Toute modification de code doit suivre ce protocole strict :
+   - **Lecture seule d'abord :** L'IA doit toujours demander un `grep` ou `sed` pour lire l'état exact du fichier avant d'écrire.
+   - **Injection Python :** Utiliser des mini-scripts Python pour faire des remplacements de blocs de texte précis (avec vérification `if old_block in content`). Fini les `echo` ou `sed` qui cassent la syntaxe.
+
+7. **LA RÈGLE DU BUILD (FRONTEND) :** Le projet est servi par un serveur web (IP publique). Toute modification dans `frontend/src/` n'aura **AUCUN EFFET VISUEL** tant que l'application n'est pas recompilée.
+   - Action obligatoire après modification : `cd ~/stats_des_pistes/frontend && npm run build`
+   - Toujours faire un vidage de cache (Ctrl + F5) sur le navigateur ensuite.
+
+8. **PIÈGES TECHNIQUES CONNUS :**
+   - **Forcer le rendu Leaflet (Le piège de la Key) :** React-Leaflet ne met pas toujours à jour une icône si le marqueur existe déjà. Pour forcer un changement visuel conditionnel, il faut altérer sa clé : `key={index + (isPrincipal ? "-live" : "")}`.
+   - **Bypass CSS Leaflet :** Pour agrandir dynamiquement une icône `L.DivIcon`, il faut modifier `iconSize` et `iconAnchor`, MAIS AUSSI retirer ou changer le `className` pour éviter qu'une règle CSS globale ne bride la taille.
+   - **Comparaison de vols (Le piège des espaces) :** Les données ADS-B contiennent souvent des espaces invisibles dans les numéros de vol (`"EZY34GB   "`). Pour comparer deux avions, toujours utiliser `.callsign.trim()` ou vérifier l'objet en mémoire (`avion1 === avion2`).
