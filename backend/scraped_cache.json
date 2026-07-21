@@ -621,7 +621,7 @@
     "ville": "PALMA-SON SANT JOAN",
     "vol": "EJU1856",
     "compagnie": "easyJet",
-    "statut": "Retardé"
+    "statut": "Atterri à 18:08"
   },
   {
     "type": "Départ",
@@ -661,7 +661,7 @@
     "ville": "PORTO-FRANCISCO SA CARNEIRO",
     "vol": "EJU6882",
     "compagnie": "easyJet",
-    "statut": "Embarquement :Terminal billi - porte 33"
+    "statut": "Embarquement :Terminal billi"
   },
   {
     "type": "Départ",
@@ -669,7 +669,7 @@
     "ville": "APT INTER MADERE CRISTIANO RON",
     "vol": "EJU1879",
     "compagnie": "easyJet",
-    "statut": "Embarquement :Terminal billi"
+    "statut": "Embarquement :Terminal billi - porte 33"
   },
   {
     "type": "Arrivée",
@@ -677,7 +677,7 @@
     "ville": "BRISTOL",
     "vol": "U22769",
     "compagnie": "easyJet",
-    "statut": "Retardé"
+    "statut": "Prévu à 19:30"
   },
   {
     "type": "Arrivée",
@@ -685,7 +685,7 @@
     "ville": "TUNIS-CARTHAGE",
     "vol": "TU628",
     "compagnie": "Tunisair",
-    "statut": "Retardé"
+    "statut": "Prévu à 19:40"
   },
   {
     "type": "Départ",
@@ -701,7 +701,7 @@
     "ville": "BARCELONE-EL PRAT",
     "vol": "VY2914 / IB5439 / LA5758 / 5269 / QR3519",
     "compagnie": "Vueling / Iberia / LAN AIRLINES / QATAR AIRWAYS",
-    "statut": "Retardé"
+    "statut": "Prévu à 18:44"
   },
   {
     "type": "Arrivée",
@@ -725,7 +725,7 @@
     "ville": "ORAN-AHMED BEN BELLA",
     "vol": "V72765",
     "compagnie": "Volotea",
-    "statut": "Retardé"
+    "statut": "Prévu à 19:00"
   },
   {
     "type": "Arrivée",
@@ -733,7 +733,7 @@
     "ville": "MUNICH-FRANZ JOSEF STRAUSS",
     "vol": "LH2258",
     "compagnie": "Lufthansa",
-    "statut": "Retardé"
+    "statut": "Prévu à 18:50"
   },
   {
     "type": "Départ",
@@ -741,7 +741,7 @@
     "ville": "MADRID-ADOLFO SUAREZ",
     "vol": "IB1204",
     "compagnie": "Iberia",
-    "statut": ""
+    "statut": "Embarquement :Hall A - porte 07"
   },
   {
     "type": "Départ",
@@ -757,7 +757,7 @@
     "ville": "PARIS-CDG",
     "vol": "AF7436",
     "compagnie": "Air France",
-    "statut": ""
+    "statut": "Atterri à 18:23"
   },
   {
     "type": "Arrivée",
@@ -765,7 +765,7 @@
     "ville": "LONDRES-LUTON",
     "vol": "U22423",
     "compagnie": "easyJet",
-    "statut": ""
+    "statut": "Prévu à 19:10"
   },
   {
     "type": "Départ",
@@ -797,7 +797,7 @@
     "ville": "BERLIN-BRANDENBURG",
     "vol": "EJU1924",
     "compagnie": "easyJet",
-    "statut": ""
+    "statut": "Prévu à 19:00"
   },
   {
     "type": "Départ",
@@ -813,7 +813,7 @@
     "ville": "ZURICH-KLOTEN",
     "vol": "LX552",
     "compagnie": "Swiss",
-    "statut": ""
+    "statut": "Prévu à 19:30"
   },
   {
     "type": "Départ",
@@ -845,7 +845,7 @@
     "ville": "ALGER-HOUARI BOUMEDIENE",
     "vol": "AH1190",
     "compagnie": "Air Algérie",
-    "statut": ""
+    "statut": "Prévu à 19:45"
   },
   {
     "type": "Arrivée",
@@ -853,7 +853,7 @@
     "ville": "FIGARI-SUD CORSE",
     "vol": "V72433",
     "compagnie": "Volotea",
-    "statut": ""
+    "statut": "Retardé"
   },
   {
     "type": "Arrivée",
@@ -861,7 +861,7 @@
     "ville": "NAPLES-CAPODICHINO",
     "vol": "V72447",
     "compagnie": "Volotea",
-    "statut": ""
+    "statut": "Prévu à 20:03"
   },
   {
     "type": "Départ",
@@ -885,7 +885,7 @@
     "ville": "OSLO-GARDERMOEN",
     "vol": "DY1452",
     "compagnie": "Norwegian",
-    "statut": ""
+    "statut": "Prévu à 20:18"
   },
   {
     "type": "Arrivée",
@@ -901,7 +901,7 @@
     "ville": "ALGER-HOUARI BOUMEDIENE",
     "vol": "AH1191",
     "compagnie": "Air Algérie",
-    "statut": "Embarquement :Hall A - porte 81"
+    "statut": "Embarquement :Hall A - porte 83"
   },
   {
     "type": "Départ",
@@ -909,7 +909,7 @@
     "ville": "OSLO-GARDERMOEN",
     "vol": "DY1453",
     "compagnie": "Norwegian",
-    "statut": "Embarquement :Hall A - porte 09"
+    "statut": "Embarquement :Hall A - porte 64"
   },
   {
     "type": "Départ",
@@ -925,7 +925,7 @@
     "ville": "LONDRES-GATWICK",
     "vol": "U28385",
     "compagnie": "easyJet",
-    "statut": ""
+    "statut": "Retardé"
   },
   {
     "type": "Arrivée",
@@ -1037,7 +1037,7 @@
     "ville": "APT INTER MADERE CRISTIANO RON",
     "vol": "EJU1880",
     "compagnie": "easyJet",
-    "statut": ""
+    "statut": "Retardé"
   },
   {
     "type": "Arrivée",
@@ -1061,6 +1061,6 @@
     "ville": "BARI-PALESE MACCH.",
     "vol": "V72663",
     "compagnie": "Volotea",
-    "statut": ""
+    "statut": "Retardé"
   }
 ]
