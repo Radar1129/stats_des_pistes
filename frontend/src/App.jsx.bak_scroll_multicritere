@@ -6,11 +6,11 @@ import './App.css'
 
 const API_BASE_URL = '';
 
-const getPlaneIcon = (cap, isLocal) => {
+const getPlaneIcon = (cap, isLocal, isSelected = false) => {
   const rotation = cap || 0;
-  const color = isLocal ? '#e74c3c' : '#1a73e8';
+  const color = isSelected ? '#f39c12' : (isLocal ? '#e74c3c' : '#1a73e8');
   const svgHtml = `
-    <div style="transform: rotate(${rotation}deg); transform-origin: center; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center;">
+    <div style="transform: rotate(${rotation}deg) ${isSelected ? "scale(1.5)" : ""}; transform-origin: center; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center;">
       <svg width="26" height="26" viewBox="0 0 24 24" fill="${color}" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.4));">
         <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L14 19v-5.5l8 2.5z"/>
       </svg>
@@ -29,15 +29,81 @@ const axePiste1129 = [[44.8572, -0.8500], [44.8281, -0.7150], [44.8030, -0.5800]
 
 
 const dicoCompagnies = {
-  "W9": "WUK", "W6": "WZZ", "LX": "SWR", "U2": "EJU", "DS": "EZS", "AF": "AFR",
-  "FR": "RYR", "TO": "TVF", "V7": "VOE", "A5": "HOP", "KL": "KLM",
-  "BA": "BAW", "LH": "DLH", "SN": "BEL", "IB": "IBE", "VY": "VLG",
-  "TK": "THY", "AT": "RAM", "TU": "TAR", "AH": "DAH", "3O": "MAC",
-  "EI": "EIN", "LG": "LGL", "TB": "JAF", "EZY": "EZY"
+  "U2": ["EJU", "EZY", "EZS"], // EasyJet (Europe, UK, Suisse)
+  "FR": ["RYR", "MAY", "RUK", "RYS"], // Ryanair, Malta Air, Buzz
+  "W9": ["WUK", "WZZ", "WMT"], // Wizz Air (UK, Hongrie, Malte)
+  "W6": ["WZZ", "WUK", "WMT"],
+  "AF": ["AFR", "HOP"], // Air France & Hop!
+  "TO": ["TVF"], "V7": ["VOE"], "LX": ["SWR", "EDW"], "KL": ["KLM", "KLC"],
+  "BA": ["BAW", "SHT"], "LH": ["DLH", "CLH"], "SN": ["BEL"], "IB": ["IBE", "IBS"],
+  "VY": ["VLG"], "TK": ["THY"], "AT": ["RAM"], "TU": ["TAR"], "AH": ["DAH"],
+  "3O": ["MAC"], "EI": ["EIN"], "LG": ["LGL"], "TB": ["JAF"], "EW": ["EWG"],
+  "DY": ["NAX"], "D8": ["IBK"], "PC": ["PGT"], "XQ": ["SXS"], "BT": ["BTI"],
+  "XC": ["CAI"], "5O": ["FPO"], "SS": ["CRL"], "TS": ["TSC"], "AC": ["ACA"],
+  "QR": ["QTR"], "EK": ["UAE"], "AA": ["AAL"], "DL": ["DAL"], "UA": ["UAL"],
+  "AY": ["FIN"], "A3": ["AEE"], "SK": ["SAS"], "LO": ["LOT"], "TP": ["TAP"],
+  "NT": ["IBB"], "CE": ["CLG"], "T7": ["TJT"], "8R": ["AEH"], "UU": ["REU"],
+  "BF": ["FBU"], "TX": ["FWI"], "UX": ["AEA"], "DS": ["EZS"]
 };
 
 function App() {
-  const [avionClique, setAvionClique] = useState(null);
+  const [avionClique, _setAvionClique] = useState(null);
+  const setAvionClique = (val) => {
+    _setAvionClique(val);
+    if (!val || !volsPrevus) return;
+    setTimeout(() => {
+      const cleanC = val.callsign ? val.callsign.toUpperCase().replace(/[^A-Z0-9]/g, '') : '';
+      if (!cleanC) return;
+      
+      const matchedVol = volsPrevus.find(v => {
+        const cleanV = (v.vol || v.callsign || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const iata = cleanV.substring(0, 2).toUpperCase();
+        const icaos = (typeof dicoCompagnies !== 'undefined' ? dicoCompagnies[iata] : []) || [];
+        const matchDico = icaos.some(icao => cleanC.toUpperCase().startsWith(icao));
+        
+        let isMatch = cleanC.includes(cleanV) || cleanV.includes(cleanC) || matchDico || (cleanC.substring(0,3) === cleanV.substring(0,3));
+        
+        if (!isMatch) {
+          const liveDest = (val.destination || val.aeroport || val.route || '').toUpperCase().replace(/[^A-Z]/g, '');
+          const liveCie = (val.compagnie || val.operator || val.cie || '').toUpperCase().replace(/[^A-Z]/g, '');
+          
+          if (liveDest && liveCie) {
+            let hasDest = false, hasCie = false;
+            for (const key in v) {
+              if (typeof v[key] === 'string') {
+                const valClean = v[key].toUpperCase().replace(/[^A-Z]/g, '');
+                if (valClean.length > 2 && (valClean.includes(liveDest) || liveDest.includes(valClean))) hasDest = true;
+                if (valClean.length > 2 && (valClean.includes(liveCie) || liveCie.includes(valClean))) hasCie = true;
+              }
+            }
+            if (hasDest && hasCie) isMatch = true;
+          }
+        }
+        return isMatch;
+      });
+      
+      if (matchedVol) {
+        const flightNum = matchedVol.vol || matchedVol.callsign;
+        if (flightNum) {
+          const headers = Array.from(document.querySelectorAll('h2, h3, div, h4, span'));
+          const progHeader = headers.find(h => h.textContent && h.textContent.includes('Programme du jour'));
+          if (progHeader) {
+            const container = progHeader.closest('.card') || progHeader.closest('div') || progHeader.parentElement;
+            if (container) {
+              const innerElements = Array.from(container.querySelectorAll('*'));
+              const exactEl = innerElements.find(el => el.textContent && el.textContent.trim() === flightNum);
+              if (exactEl) {
+                exactEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+              }
+              const approxEl = innerElements.find(el => el.textContent && el.textContent.includes(flightNum) && (el.tagName === 'TR' || el.style.cursor === 'pointer' || el.className.includes('row')));
+              if (approxEl) approxEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }
+        }
+      }
+    }, 250);
+  };
   const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('radar_token') !== null);
   const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
@@ -160,8 +226,8 @@ function App() {
       const cleanP = p.vol.replace(/\s+/g, '').toLowerCase();
       const cleanC = avion.callsign.replace(/\s+/g, '').toLowerCase();
       const iata = cleanP.substring(0, 2).toUpperCase();
-      const icao = dicoCompagnies[iata];
-      const matchDico = icao && cleanC.toUpperCase().startsWith(icao);
+      const icaos = dicoCompagnies[iata] || [];
+      const matchDico = icaos.some(icao => cleanC.toUpperCase().startsWith(icao));
       return cleanC.includes(cleanP) || cleanP.includes(cleanC) || matchDico || (cleanC.substring(0,3) === cleanP.substring(0,3));
     });
 
@@ -312,7 +378,7 @@ const calculateDistance = (lat, lon) => {
             <input type="text" placeholder="Identifiant" value={usernameInput} onChange={(e) => setUsernameInput(e.target.value)} style={{ padding: '12px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '1em', outline: 'none' }} required />
             <input type="password" placeholder="Mot de passe" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} style={{ padding: '12px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '1em', outline: 'none' }} required />
             {loginError && <div style={{ color: '#e74c3c', fontSize: '0.9em', fontWeight: 'bold' }}>{loginError}</div>}
-            <button type="submit" style={{ padding: '12px', backgroundColor: '#1a73e8', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '1em', fontWeight: 'bold' }}>Se connecter</button>
+            <button type="submit" style={{ padding: '12px', backgroundColor: '#1a73e8', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', outline: 'none', boxShadow: 'none', fontSize: '1em', fontWeight: 'bold' }}>Se connecter</button>
           </form>
         </div>
       </div>
@@ -326,7 +392,7 @@ const calculateDistance = (lat, lon) => {
         <h1 style={{ margin: 0, fontSize: '1.6em', fontWeight: 'bold', color: '#0f2042', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
           📋 Tableau de Bord Radar & Statistiques (LFBD)
         </h1>
-        <button onClick={handleLogout} style={{ padding: '6px 14px', backgroundColor: '#e74c3c', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85em' }}>Déconnexion</button>
+        <button onClick={handleLogout} style={{ padding: '6px 14px', backgroundColor: '#e74c3c', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', outline: 'none', boxShadow: 'none', fontWeight: 'bold', fontSize: '0.85em' }}>Déconnexion</button>
       </header>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.35fr', gap: '20px', marginBottom: '20px' }}>
@@ -379,7 +445,8 @@ L'algorithme isole l'avion le plus pertinent via un plafond adaptatif (1500m en 
           </div>
           
           {volLivePrincipal && (
-            <div style={{ backgroundColor: '#c0392b', color: 'white', borderRadius: '4px', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '15px' }}>
+            <div style={{ backgroundColor: '#c0392b', color: 'white', borderRadius: '4px', cursor: 'pointer', outline: 'none', boxShadow: 'none',
+                  padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '15px' }}>
               <span style={{ fontSize: '1.05em', fontWeight: 'bold' }}>{volLivePrincipal.altitude} / {volLivePrincipal.vitesse} kts</span>
               <span style={{ fontSize: '0.95em', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{getPisteFromCap(volLivePrincipal.cap)}</span>
             </div>
@@ -443,13 +510,13 @@ Moyenne cumulée depuis le lancement. Elle indique la proportion de vols prévus
                           borderLeft: (matchedProg && v.vol === matchedProg.vol) ? '5px solid #e74c3c' : 'none',
                           transition: 'all 0.3s ease', 
                           opacity: isCancelled ? 0.6 : 1,
-                          outline: isTarget ? '2px solid #1a73e8' : 'none',
+                          outline: 'none',
                           outlineOffset: '-2px'
                         }}
                       >
                         <td style={{ padding: '4px 8px', fontWeight: 'bold', color: isAlert || isCancelled ? '#e74c3c' : '#333', textDecoration: isCancelled ? 'line-through' : 'none' }}>{v.heure}</td>
                         <td style={{ padding: '4px 8px' }}>
-                          <span style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '0.9em', fontWeight: 'bold', backgroundColor: '#fff', border: `1px solid ${isDepart ? '#f57c00' : '#388e3c'}`, color: isDepart ? '#f57c00' : '#388e3c' }}>
+                          <span style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '0.9em', fontWeight: 'bold', backgroundColor: '#fff', borderBottom: '1px solid #e1e8ed', borderTop: 'none', borderLeft: 'none', borderRight: 'none', outline: 'none', boxShadow: 'none', color: isDepart ? '#f57c00' : '#388e3c' }}>
                             {isDepart ? 'Départ' : 'Arrivée'}
                           </span>
                         </td>
@@ -495,7 +562,7 @@ L'algorithme analyse l'altitude et la distance de chaque avion. Ceux marqués en
               {vols.map((avion, index) => {
                 const isLocal = isBordeauxMovement(avion);
                 return avion.latitude && avion.longitude ? (
-                  <Marker key={index} eventHandlers={{ click: () => setAvionClique(avion) }} position={[avion.latitude, avion.longitude]} icon={getPlaneIcon(avion.cap, isLocal)}>
+                  <Marker key={index} eventHandlers={{ click: () => setAvionClique(avion) }} position={[avion.latitude, avion.longitude]} icon={getPlaneIcon(avion.cap, isLocal, avionClique && avionClique.callsign === avion.callsign)} zIndexOffset={avionClique && avionClique.callsign === avion.callsign ? 1000 : 0}>
                     <Popup>
                       <div style={{ textAlign: 'center', fontSize: '0.85em' }}>
                         <strong style={{ fontSize: '1.2em', color: '#1a73e8' }}>{avion.callsign}</strong><br/>
@@ -529,9 +596,11 @@ L'algorithme analyse l'altitude et la distance de chaque avion. Ceux marqués en
 
                   return (
                     <div 
-                      key={index} 
+                      key={index}
+                  onClick={() => setAvionClique(avion)} 
                       style={{ 
-                        padding: '10px 12px', 
+                        cursor: 'pointer', outline: 'none', boxShadow: 'none',
+                  padding: '10px 12px', 
                         backgroundColor: fondLigne, 
                         borderBottom: '1px solid #eee',
                         display: 'flex', 
@@ -574,7 +643,7 @@ L'algorithme analyse l'altitude et la distance de chaque avion. Ceux marqués en
           
           <div style={{ display: 'flex', gap: '6px' }}>
             {[['jour', "Aujourd'hui"], ['semaine', '7 Jours'], ['mois', '30 Jours'], ['annee', '1 Année']].map(([key, label]) => (
-              <button key={key} onClick={() => setPeriode(key)} style={{ padding: '6px 14px', fontSize: '0.8em', borderRadius: '4px', border: '1px solid #1a73e8', cursor: 'pointer', backgroundColor: periode === key ? '#1a73e8' : '#fff', color: periode === key ? '#fff' : '#1a73e8', fontWeight: 'bold' }}>{label}</button>
+              <button key={key} onClick={() => setPeriode(key)} style={{ padding: '6px 14px', fontSize: '0.8em', borderRadius: '4px', borderBottom: '1px solid #e1e8ed', borderTop: 'none', borderLeft: 'none', borderRight: 'none', outline: 'none', boxShadow: 'none', color: periode === key ? '#fff' : '#1a73e8', fontWeight: 'bold' }}>{label}</button>
             ))}
           </div>
         </div>

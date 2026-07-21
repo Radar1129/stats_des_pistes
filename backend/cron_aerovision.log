@@ -1,0 +1,92 @@
+[*] Lancement de la capture temps réel Aérovision...
+[+] Succès : 0 vols uniques ajoutés à la table shadow_aerovision.
+[*] Lancement de la capture temps réel Aérovision...
+[+] Succès : 0 vols uniques ajoutés à la table shadow_aerovision.
+[*] Lancement de la capture temps réel Aérovision...
+[+] Succès : 0 vols uniques ajoutés à la table shadow_aerovision.
+[*] Lancement de la capture temps réel Aérovision...
+[+] Succès : 0 vols uniques ajoutés à la table shadow_aerovision.
+[*] Lancement de la capture temps réel Aérovision...
+[+] Succès : 0 vols uniques ajoutés à la table shadow_aerovision.
+[*] Lancement de la capture temps réel Aérovision...
+[+] Succès : 0 vols uniques ajoutés à la table shadow_aerovision.
+[*] Lancement de la capture temps réel Aérovision...
+[+] Succès : 0 vols uniques ajoutés à la table shadow_aerovision.
+[*] Lancement de la capture temps réel Aérovision...
+[+] Succès : 0 vols uniques ajoutés à la table shadow_aerovision.
+[*] Lancement de la capture temps réel Aérovision...
+[+] Succès : 0 vols uniques ajoutés à la table shadow_aerovision.
+[*] Lancement de la capture temps réel Aérovision...
+[+] Succès : 0 vols uniques ajoutés à la table shadow_aerovision.
+[*] Lancement de la capture temps réel Aérovision...
+Traceback (most recent call last):
+  File "/home/ubuntu/stats_des_pistes/backend/check_aerovision.py", line 108, in <module>
+    store_flights(flights)
+    ~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/ubuntu/stats_des_pistes/backend/check_aerovision.py", line 101, in store_flights
+    conn.commit()
+    ~~~~~~~~~~~^^
+sqlite3.DatabaseError: database disk image is malformed
+[*] Lancement de la capture temps réel Aérovision...
+[+] Succès : 2 vols uniques ajoutés à la table shadow_aerovision.
+[*] Lancement de la capture temps réel Aérovision...
+[+] Succès : 0 vols uniques ajoutés à la table shadow_aerovision.
+[*] Lancement de la capture temps réel Aérovision...
+[+] Succès : 2 vols uniques ajoutés à la table shadow_aerovision.
+[*] Lancement de la capture temps réel Aérovision...
+[+] Succès : 0 vols uniques ajoutés à la table shadow_aerovision.
+[2026-07-20 23:45:03] OK: 141 vols réactualisés.
+[2026-07-21 00:00:02] OK: 134 vols réactualisés.
+[2026-07-21 00:15:03] OK: 134 vols réactualisés.
+[2026-07-21 00:30:02] OK: 134 vols réactualisés.
+[2026-07-21 00:45:02] OK: 134 vols réactualisés.
+[2026-07-21 01:00:03] OK: 134 vols réactualisés.
+[2026-07-21 01:15:03] OK: 134 vols réactualisés.
+[2026-07-21 01:30:02] OK: 134 vols réactualisés.
+[2026-07-21 01:45:02] OK: 134 vols réactualisés.
+[2026-07-21 02:00:02] OK: 134 vols réactualisés.
+[2026-07-21 02:15:02] OK: 134 vols réactualisés.
+[2026-07-21 02:30:02] OK: 134 vols réactualisés.
+[2026-07-21 02:45:02] OK: 134 vols réactualisés.
+[2026-07-21 03:00:03] OK: 134 vols réactualisés.
+[2026-07-21 03:15:02] OK: 134 vols réactualisés.
+[2026-07-21 03:30:03] OK: 134 vols réactualisés.
+[2026-07-21 03:45:02] OK: 134 vols réactualisés.
+[2026-07-21 04:00:03] OK: 134 vols réactualisés.
+[2026-07-21 04:15:03] OK: 134 vols réactualisés.
+[2026-07-21 04:30:03] OK: 134 vols réactualisés.
+[2026-07-21 04:45:02] OK: 133 vols réactualisés.
+[2026-07-21 05:00:03] OK: 134 vols réactualisés.
+[2026-07-21 05:15:03] OK: 134 vols réactualisés.
+[2026-07-21 05:30:03] OK: 134 vols réactualisés.
+[2026-07-21 05:45:02] OK: 134 vols réactualisés.
+[2026-07-21 06:00:03] OK: 134 vols réactualisés.
+[2026-07-21 06:15:02] OK: 134 vols réactualisés.
+[2026-07-21 06:30:03] OK: 134 vols réactualisés.
+[2026-07-21 06:45:03] OK: 134 vols réactualisés.
+[2026-07-21 07:00:04] OK: 134 vols réactualisés.
+[2026-07-21 07:15:02] OK: 134 vols réactualisés.
+[2026-07-21 07:30:03] OK: 134 vols réactualisés.
+[2026-07-21 07:45:03] OK: 134 vols réactualisés.
+[2026-07-21 08:00:04] OK: 134 vols réactualisés.
+[2026-07-21 08:15:03] OK: 134 vols réactualisés.
+[2026-07-21 08:30:03] OK: 134 vols réactualisés.
+[2026-07-21 08:45:02] OK: 134 vols réactualisés.
+[2026-07-21 09:00:03] OK: 134 vols réactualisés.
+[2026-07-21 09:15:02] OK: 134 vols réactualisés.
+[2026-07-21 09:30:02] OK: 134 vols réactualisés.
+[2026-07-21 09:45:02] OK: 134 vols réactualisés.
+[2026-07-21 10:00:03] OK: 134 vols réactualisés.
+[2026-07-21 10:15:02] OK: 134 vols réactualisés.
+[2026-07-21 10:30:03] OK: 134 vols réactualisés.
+[2026-07-21 10:45:03] OK: 134 vols réactualisés.
+[2026-07-21 11:00:02] OK: 134 vols réactualisés.
+[2026-07-21 11:15:03] OK: 133 vols réactualisés.
+[2026-07-21 11:30:03] OK: 133 vols réactualisés.
+[2026-07-21 11:45:02] OK: 133 vols réactualisés.
+[2026-07-21 12:00:04] OK: 133 vols réactualisés.
+[2026-07-21 12:15:02] OK: 133 vols réactualisés.
+[2026-07-21 12:30:04] OK: 133 vols réactualisés.
+[2026-07-21 12:45:02] OK: 133 vols réactualisés.
+[2026-07-21 13:00:03] OK: 133 vols réactualisés.
+[2026-07-21 13:15:04] OK: 133 vols réactualisés.

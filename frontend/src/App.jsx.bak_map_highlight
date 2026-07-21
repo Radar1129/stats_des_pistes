@@ -29,11 +29,21 @@ const axePiste1129 = [[44.8572, -0.8500], [44.8281, -0.7150], [44.8030, -0.5800]
 
 
 const dicoCompagnies = {
-  "W9": "WUK", "W6": "WZZ", "LX": "SWR", "U2": "EJU", "DS": "EZS", "AF": "AFR",
-  "FR": "RYR", "TO": "TVF", "V7": "VOE", "A5": "HOP", "KL": "KLM",
-  "BA": "BAW", "LH": "DLH", "SN": "BEL", "IB": "IBE", "VY": "VLG",
-  "TK": "THY", "AT": "RAM", "TU": "TAR", "AH": "DAH", "3O": "MAC",
-  "EI": "EIN", "LG": "LGL", "TB": "JAF", "EZY": "EZY"
+  "U2": ["EJU", "EZY", "EZS"], // EasyJet (Europe, UK, Suisse)
+  "FR": ["RYR", "MAY", "RUK", "RYS"], // Ryanair, Malta Air, Buzz
+  "W9": ["WUK", "WZZ", "WMT"], // Wizz Air (UK, Hongrie, Malte)
+  "W6": ["WZZ", "WUK", "WMT"],
+  "AF": ["AFR", "HOP"], // Air France & Hop!
+  "TO": ["TVF"], "V7": ["VOE"], "LX": ["SWR", "EDW"], "KL": ["KLM", "KLC"],
+  "BA": ["BAW", "SHT"], "LH": ["DLH", "CLH"], "SN": ["BEL"], "IB": ["IBE", "IBS"],
+  "VY": ["VLG"], "TK": ["THY"], "AT": ["RAM"], "TU": ["TAR"], "AH": ["DAH"],
+  "3O": ["MAC"], "EI": ["EIN"], "LG": ["LGL"], "TB": ["JAF"], "EW": ["EWG"],
+  "DY": ["NAX"], "D8": ["IBK"], "PC": ["PGT"], "XQ": ["SXS"], "BT": ["BTI"],
+  "XC": ["CAI"], "5O": ["FPO"], "SS": ["CRL"], "TS": ["TSC"], "AC": ["ACA"],
+  "QR": ["QTR"], "EK": ["UAE"], "AA": ["AAL"], "DL": ["DAL"], "UA": ["UAL"],
+  "AY": ["FIN"], "A3": ["AEE"], "SK": ["SAS"], "LO": ["LOT"], "TP": ["TAP"],
+  "NT": ["IBB"], "CE": ["CLG"], "T7": ["TJT"], "8R": ["AEH"], "UU": ["REU"],
+  "BF": ["FBU"], "TX": ["FWI"], "UX": ["AEA"], "DS": ["EZS"]
 };
 
 function App() {
@@ -160,8 +170,8 @@ function App() {
       const cleanP = p.vol.replace(/\s+/g, '').toLowerCase();
       const cleanC = avion.callsign.replace(/\s+/g, '').toLowerCase();
       const iata = cleanP.substring(0, 2).toUpperCase();
-      const icao = dicoCompagnies[iata];
-      const matchDico = icao && cleanC.toUpperCase().startsWith(icao);
+      const icaos = dicoCompagnies[iata] || [];
+      const matchDico = icaos.some(icao => cleanC.toUpperCase().startsWith(icao));
       return cleanC.includes(cleanP) || cleanP.includes(cleanC) || matchDico || (cleanC.substring(0,3) === cleanP.substring(0,3));
     });
 
@@ -379,7 +389,8 @@ L'algorithme isole l'avion le plus pertinent via un plafond adaptatif (1500m en 
           </div>
           
           {volLivePrincipal && (
-            <div style={{ backgroundColor: '#c0392b', color: 'white', borderRadius: '4px', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '15px' }}>
+            <div style={{ backgroundColor: '#c0392b', color: 'white', borderRadius: '4px', cursor: 'pointer',
+                  padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '15px' }}>
               <span style={{ fontSize: '1.05em', fontWeight: 'bold' }}>{volLivePrincipal.altitude} / {volLivePrincipal.vitesse} kts</span>
               <span style={{ fontSize: '0.95em', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{getPisteFromCap(volLivePrincipal.cap)}</span>
             </div>
@@ -529,9 +540,11 @@ L'algorithme analyse l'altitude et la distance de chaque avion. Ceux marqués en
 
                   return (
                     <div 
-                      key={index} 
+                      key={index}
+                  onClick={() => setAvionClique(avion)} 
                       style={{ 
-                        padding: '10px 12px', 
+                        cursor: 'pointer',
+                  padding: '10px 12px', 
                         backgroundColor: fondLigne, 
                         borderBottom: '1px solid #eee',
                         display: 'flex', 

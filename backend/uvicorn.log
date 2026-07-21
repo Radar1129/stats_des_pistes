@@ -1,0 +1,34 @@
+INFO:     Started server process [207610]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:49808 - "GET /api/getData?path=player%3Aplayer%2Fdata&roles=value HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:37642 - "GET /vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:39452 - "POST /login HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:39454 - "POST /login HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56170 - "POST /login HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:43462 - "POST /login HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:43472 - "POST /login HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:43480 - "POST /login HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:43494 - "POST /login HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:43506 - "POST /login HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:43520 - "POST /login HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:43532 - "POST /login HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49204 - "POST /login HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49206 - "POST /login HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:36506 - "GET /vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:40282 - "GET /vols/expected?t=1784639563042 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:40280 - "GET /stats/pistes?t=1784639563042 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:40302 - "GET /stats/historique?periode=jour&t=1784639563042 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:40318 - "GET /vols/direct?t=1784639563042 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:40300 - "GET /score?t=1784639563042 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:40324 - "GET /score?t=1784639568819 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:40322 - "GET /stats/historique?periode=jour&t=1784639568819 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:40342 - "GET /vols/direct?t=1784639568819 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:40344 - "GET /stats/pistes?t=1784639568819 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:40366 - "GET /vols/expected?t=1784639568819 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59604 - "GET /stats/pistes?t=1784639811010 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59610 - "GET /vols/expected?t=1784639811010 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59620 - "GET /stats/historique?periode=jour&t=1784639811010 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59622 - "GET /vols/direct?t=1784639811010 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59638 - "GET /score?t=1784639811010 HTTP/1.1" 404 Not Found

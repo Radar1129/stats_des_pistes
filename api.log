@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/home/ubuntu/stats_des_pistes/backend/api.py", line 5, in <module>
+    import pytz
+ModuleNotFoundError: No module named 'pytz'

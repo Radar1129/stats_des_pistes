@@ -27,15 +27,6 @@ const getPlaneIcon = (cap, isLocal) => {
 const axePiste0523 = [[44.730, -0.850], [44.828, -0.715], [44.910, -0.600]];
 const axePiste1129 = [[44.8572, -0.8500], [44.8281, -0.7150], [44.8030, -0.5800]];
 
-
-const dicoCompagnies = {
-  "W9": "WUK", "W6": "WZZ", "LX": "SWR", "U2": "EJU", "DS": "EZS", "AF": "AFR",
-  "FR": "RYR", "TO": "TVF", "V7": "VOE", "A5": "HOP", "KL": "KLM",
-  "BA": "BAW", "LH": "DLH", "SN": "BEL", "IB": "IBE", "VY": "VLG",
-  "TK": "THY", "AT": "RAM", "TU": "TAR", "AH": "DAH", "3O": "MAC",
-  "EI": "EIN", "LG": "LGL", "TB": "JAF", "EZY": "EZY"
-};
-
 function App() {
   const [avionClique, setAvionClique] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('radar_token') !== null);
@@ -159,10 +150,7 @@ function App() {
       if (!p.vol || !avion.callsign) return false;
       const cleanP = p.vol.replace(/\s+/g, '').toLowerCase();
       const cleanC = avion.callsign.replace(/\s+/g, '').toLowerCase();
-      const iata = cleanP.substring(0, 2).toUpperCase();
-      const icao = dicoCompagnies[iata];
-      const matchDico = icao && cleanC.toUpperCase().startsWith(icao);
-      return cleanC.includes(cleanP) || cleanP.includes(cleanC) || matchDico || (cleanC.substring(0,3) === cleanP.substring(0,3));
+      return cleanC.includes(cleanP) || cleanP.includes(cleanC) || cleanC.substring(0,3) === cleanP.substring(0,3);
     });
 
     const estArrivee = volProgramme && volProgramme.type?.toLowerCase().includes('arrivée');

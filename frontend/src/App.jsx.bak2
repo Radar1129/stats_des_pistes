@@ -27,15 +27,6 @@ const getPlaneIcon = (cap, isLocal) => {
 const axePiste0523 = [[44.730, -0.850], [44.828, -0.715], [44.910, -0.600]];
 const axePiste1129 = [[44.8572, -0.8500], [44.8281, -0.7150], [44.8030, -0.5800]];
 
-
-const dicoCompagnies = {
-  "W9": "WUK", "W6": "WZZ", "LX": "SWR", "U2": "EJU", "DS": "EZS", "AF": "AFR",
-  "FR": "RYR", "TO": "TVF", "V7": "VOE", "A5": "HOP", "KL": "KLM",
-  "BA": "BAW", "LH": "DLH", "SN": "BEL", "IB": "IBE", "VY": "VLG",
-  "TK": "THY", "AT": "RAM", "TU": "TAR", "AH": "DAH", "3O": "MAC",
-  "EI": "EIN", "LG": "LGL", "TB": "JAF", "EZY": "EZY"
-};
-
 function App() {
   const [avionClique, setAvionClique] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('radar_token') !== null);
@@ -159,10 +150,7 @@ function App() {
       if (!p.vol || !avion.callsign) return false;
       const cleanP = p.vol.replace(/\s+/g, '').toLowerCase();
       const cleanC = avion.callsign.replace(/\s+/g, '').toLowerCase();
-      const iata = cleanP.substring(0, 2).toUpperCase();
-      const icao = dicoCompagnies[iata];
-      const matchDico = icao && cleanC.toUpperCase().startsWith(icao);
-      return cleanC.includes(cleanP) || cleanP.includes(cleanC) || matchDico || (cleanC.substring(0,3) === cleanP.substring(0,3));
+      return cleanC.includes(cleanP) || cleanP.includes(cleanC) || cleanC.substring(0,3) === cleanP.substring(0,3);
     });
 
     const estArrivee = volProgramme && volProgramme.type?.toLowerCase().includes('arrivée');
@@ -175,7 +163,7 @@ function App() {
     return altM <= 500;
   };
 
-  const volLivePrincipal = (avionClique && vols.find(v => v.callsign === avionClique.callsign)) || vols.find(isBordeauxMovement);
+  const volLivePrincipal = vols.find(isBordeauxMovement);
 
   const getPisteFromCap = (cap) => {
     if (cap === undefined || cap === null) return "LFBD";
@@ -225,6 +213,19 @@ const calculateDistance = (lat, lon) => {
     if (squawk === '7500') return "🚨 DÉTOURNEMENT (7500)";
     return null;
   };
+
+  const matchedProgClique = (() => {
+    if (!avionClique || !volsPrevus || volsPrevus.length === 0) return null;
+    const isDescending = avionClique.txVert < -64;
+    const isClimbing = avionClique.txVert > 64;
+    return volsPrevus.find(v => {
+      const isArrival = v.type === 'Arrivée';
+      if ((isDescending && !isArrival) || (isClimbing && isArrival)) return false;
+      const cLower = (avionClique.callsign || "").toLowerCase().trim();
+      const vLower = (v.vol || "").toLowerCase().trim();
+      return cLower.includes(vLower) || vLower.includes(cLower) || (cLower.substring(0,3) === vLower.substring(0,3));
+    });
+  })();
 
   const matchedProg = (() => {
     if (!volLivePrincipal || !volsPrevus || volsPrevus.length === 0) return null;
@@ -439,8 +440,8 @@ Moyenne cumulée depuis le lancement. Elle indique la proportion de vols prévus
                         id={isScrollTarget ? 'ligne-vol-scroll-cible' : undefined}
                         style={{ 
                           borderBottom: '2px solid #fff', 
-                          backgroundColor: (matchedProg && v.vol === matchedProg.vol) ? '#ffebee' : fondLigne,
-                          borderLeft: (matchedProg && v.vol === matchedProg.vol) ? '5px solid #e74c3c' : 'none',
+                          backgroundColor: (matchedProgClique && v.vol === matchedProgClique.vol) ? '#fff3e0' : ((matchedProg && v.vol === matchedProg.vol) ? '#ffebee' : fondLigne),
+                          borderLeft: (matchedProgClique && v.vol === matchedProgClique.vol) ? '5px solid #f39c12' : ((matchedProg && v.vol === matchedProg.vol) ? '5px solid #e74c3c' : 'none'),
                           transition: 'all 0.3s ease', 
                           opacity: isCancelled ? 0.6 : 1,
                           outline: isTarget ? '2px solid #1a73e8' : 'none',
@@ -495,7 +496,7 @@ L'algorithme analyse l'altitude et la distance de chaque avion. Ceux marqués en
               {vols.map((avion, index) => {
                 const isLocal = isBordeauxMovement(avion);
                 return avion.latitude && avion.longitude ? (
-                  <Marker key={index} eventHandlers={{ click: () => setAvionClique(avion) }} position={[avion.latitude, avion.longitude]} icon={getPlaneIcon(avion.cap, isLocal)}>
+                  <Marker key={index} position={[avion.latitude, avion.longitude]} icon={getPlaneIcon(avion.cap, isLocal)}>
                     <Popup>
                       <div style={{ textAlign: 'center', fontSize: '0.85em' }}>
                         <strong style={{ fontSize: '1.2em', color: '#1a73e8' }}>{avion.callsign}</strong><br/>
@@ -523,17 +524,19 @@ L'algorithme analyse l'altitude et la distance de chaque avion. Ceux marqués en
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {vols.map((avion, index) => {
                   const isLocal = isBordeauxMovement(avion);
-                  const isActive = volLivePrincipal && volLivePrincipal.callsign === avion.callsign;
-                  const fondLigne = isActive ? '#fdf2f2' : '#fff';
-                  const couleurTexte = isActive ? '#e74c3c' : '#1a73e8';
+                  const isClique = avionClique && avionClique.hex === avion.hex;
+                  const fondLigne = isClique ? '#fff3e0' : (isLocal ? '#fdf2f2' : '#fff');
+                  const bordureGauche = isClique ? '5px solid #f39c12' : 'none';
+                  const couleurTexte = isLocal ? '#e74c3c' : '#1a73e8';
 
                   return (
                     <div 
                       key={index} 
                       style={{ 
                         padding: '10px 12px', 
-                        backgroundColor: fondLigne, 
-                        borderBottom: '1px solid #eee',
+                        backgroundColor: fondLigne,
+                  borderLeft: bordureGauche,
+                  borderBottom: '1px solid #eee',
                         display: 'flex', 
                         justifyContent: 'space-between', 
                         alignItems: 'center',

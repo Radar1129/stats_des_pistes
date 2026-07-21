@@ -1,0 +1,355 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import sqlite3
+import requests
+from datetime import datetime, timedelta
+from bs4 import BeautifulSoup
+import random
+import subprocess
+from zoneinfo import ZoneInfo
+import copy
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+DB_FILE = "/home/ubuntu/stats_des_pistes/backend/bordeaux_stats.db"
+
+# Cache découplé : on ne stocke ici que les données brutes de l'aéroport
+CACHED_SCRAPED_FLIGHTS = None
+LAST_FETCH_TIME = None
+NEXT_FETCH_INTERVAL = 1800  # On vérifie l'aéroport toutes les 30 minutes au lieu de 6 heures
+
+try:
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute("ALTER TABLE vols_detectes ADD COLUMN type_mouvement TEXT DEFAULT 'atterrissage'")
+    conn.commit()
+    conn.close()
+except sqlite3.OperationalError:
+    pass
+
+try:
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS performance_journaliere (
+            date TEXT PRIMARY KEY,
+            attendus INTEGER,
+            detectes_prog INTEGER
+        )
+    """)
+    conn.commit()
+    conn.close()
+except Exception as e:
+    pass
+
+class LoginData(BaseModel):
+    username: str
+    password: str
+
+@app.get("/api/status/antenne")
+def get_status_antenne():
+    try:
+        out = subprocess.check_output(["ps", "aux"]).decode("utf-8")
+        is_running = any("detector.py" in line and "grep" not in line for line in out.splitlines())
+        return {"active": is_running}
+    except Exception as e:
+        return {"active": False, "error": str(e)}
+
+@app.get("/api/vols/direct")
+def get_vols_direct():
+    url = "https://api.adsb.lol/v2/lat/44.8283/lon/-0.7156/dist/15"
+    try:
+        response = requests.get(url, timeout=3)
+        if response.status_code == 200:
+            ac = response.json().get("ac", [])
+            vols_formates = []
+            for avion in ac:
+                callsign = avion.get("flight", "").strip()
+                if not callsign:
+                    callsign = "ANONYME"
+
+                alt_raw = avion.get("alt_baro", 0)
+                if isinstance(alt_raw, (int, float)):
+                    alt_m = int(alt_raw * 0.3048)
+                elif isinstance(alt_raw, str) and alt_raw.strip().isdigit():
+                    alt_m = int(float(alt_raw) * 0.3048)
+                else:
+                    alt_m = 0
+
+                vols_formates.append({
+                    "callsign": callsign,
+                    "type": avion.get("t", "UNKN"),
+                    "latitude": avion.get("lat"),
+                    "longitude": avion.get("lon"),
+                    "altitude": f"{alt_m}m",
+                    "vitesse": avion.get("gs", 0),
+                    "cap": avion.get("track", 0),
+                })
+            return {"data": vols_formates}
+    except Exception as e:
+        pass
+    return {"data": []}
+
+@app.get("/api/vols/expected")
+def get_vols_expected():
+    global CACHED_SCRAPED_FLIGHTS, LAST_FETCH_TIME, NEXT_FETCH_INTERVAL
+
+    now = datetime.now()
+    need_scrape = False
+
+    if CACHED_SCRAPED_FLIGHTS is None or LAST_FETCH_TIME is None:
+        need_scrape = True
+    elif (now - LAST_FETCH_TIME).total_seconds() >= NEXT_FETCH_INTERVAL:
+        need_scrape = True
+
+    if need_scrape:
+        date_aujourdhui = now.strftime("%d/%m/%Y")
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+            'Accept': 'application/json, text/javascript, */*; q=0.01',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+        scraped_data = []
+
+        # 1. Scraping Arrivées
+        try:
+            url_in = f"https://www.bordeaux.aeroport.fr/ajax/flights?w=in&date={date_aujourdhui}&time=00:00&_wrapper_format=drupal_ajax"
+            res_in = requests.post(url_in, headers=headers, timeout=5)
+            if res_in.status_code == 200:
+                for cmd in res_in.json():
+                    if cmd.get("command") == "insert" and "data" in cmd:
+                        soup = BeautifulSoup(cmd["data"], "html.parser")
+                        for row in soup.find_all("tr"):
+                            tds = row.find_all("td")
+                            if len(tds) >= 4:
+                                scraped_data.append({
+                                    "type": "arrivée",
+                                    "heure": tds[0].get_text(strip=True),
+                                    "ville": tds[1].get_text(" / ", strip=True),
+                                    "vol": tds[2].get_text(" / ", strip=True),
+                                    "compagnie": tds[3].get_text(" / ", strip=True),
+                                    "statut": tds[5].get_text(strip=True) if len(tds) >= 6 else ""
+                                })
+                        break
+        except Exception:
+            pass
+
+        # 2. Scraping Départs
+        try:
+            url_out = f"https://www.bordeaux.aeroport.fr/ajax/flights?w=out&date={date_aujourdhui}&time=00:00&_wrapper_format=drupal_ajax"
+            res_out = requests.post(url_out, headers=headers, timeout=5)
+            if res_out.status_code == 200:
+                for cmd in res_out.json():
+                    if cmd.get("command") == "insert" and "data" in cmd:
+                        soup = BeautifulSoup(cmd["data"], "html.parser")
+                        for row in soup.find_all("tr"):
+                            tds = row.find_all("td")
+                            if len(tds) >= 4:
+                                scraped_data.append({
+                                    "type": "départ",
+                                    "heure": tds[0].get_text(strip=True),
+                                    "ville": tds[1].get_text(" / ", strip=True),
+                                    "vol": tds[2].get_text(" / ", strip=True),
+                                    "compagnie": tds[3].get_text(" / ", strip=True),
+                                    "statut": tds[5].get_text(strip=True) if len(tds) >= 6 else ""
+                                })
+                        break
+        except Exception:
+            pass
+
+        if scraped_data:
+            CACHED_SCRAPED_FLIGHTS = scraped_data
+            LAST_FETCH_TIME = now
+
+    # --- MATCHING LIVE DYNAMIQUE (Calculé à chaque chargement de page) ---
+    vols_totaux = copy.deepcopy(CACHED_SCRAPED_FLIGHTS) if CACHED_SCRAPED_FLIGHTS else []
+
+    hier_str = (now - timedelta(days=1)).strftime("%Y-%m-%d 00:00:00")
+    vols_detectes_du_jour = []
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, horaire_passage, type_mouvement FROM vols_detectes WHERE horaire_passage >= ?", (hier_str,))
+        
+        system_tz = ZoneInfo("UTC") 
+        france_tz = ZoneInfo("Europe/Paris")
+        
+        for row in cursor.fetchall():
+            try:
+                dt_utc = datetime.strptime(row[1], "%Y-%m-%d %H:%M:%S").replace(tzinfo=system_tz)
+                dt_local = dt_utc.astimezone(france_tz)
+                
+                vols_detectes_du_jour.append({
+                    "id": row[0],
+                    "dt_local": dt_local,
+                    "type_mouv": row[2].lower() if row[2] else "atterrissage",
+                    "utilise": False
+                })
+            except Exception:
+                pass
+        conn.close()
+    except Exception:
+        pass
+
+    now_local = now.astimezone(ZoneInfo("Europe/Paris"))
+    
+    for vol in vols_totaux:
+        vol["detecte"] = False
+        try:
+            h_prev, m_prev = map(int, vol["heure"].split(":"))
+            dt_prevue = now_local.replace(hour=h_prev, minute=m_prev, second=0, microsecond=0)
+        except:
+            continue
+
+        type_cible = "atterrissage" if vol["type"] == "arrivée" else "decollage"
+        
+        candidats = []
+        for d in vols_detectes_du_jour:
+            if not d["utilise"] and type_cible in d["type_mouv"]:
+                diff_sec = abs((dt_prevue - d["dt_local"]).total_seconds())
+                if diff_sec <= 3600:
+                    candidats.append((diff_sec, d))
+        
+        if candidats:
+            candidats.sort(key=lambda x: x[0])
+            candidats[0][1]["utilise"] = True
+            vol["detecte"] = True
+
+    # Recalcul de la performance du jour
+    today_str = now.strftime("%Y-%m-%d")
+    attendus_du_jour = len(vols_totaux)
+    detectes_du_jour = sum(1 for v in vols_totaux if v["detecte"])
+
+    if attendus_du_jour > 0:
+        try:
+            conn = sqlite3.connect(DB_FILE)
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT OR REPLACE INTO performance_journaliere (date, attendus, detectes_prog)
+                VALUES (?, ?, ?)
+            """, (today_str, attendus_du_jour, detectes_du_jour))
+            conn.commit()
+            conn.close()
+        except:
+            pass
+
+    score_cumule = None
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT SUM(attendus), SUM(detectes_prog) FROM performance_journaliere")
+        row = cursor.fetchone()
+        if row and row[0] and row[0] > 0:
+            score_cumule = round((row[1] / row[0]) * 100, 1)
+        conn.close()
+    except Exception:
+        pass
+
+    if score_cumule is None and attendus_du_jour > 0:
+        score_cumule = round((detectes_du_jour / attendus_du_jour) * 100, 1)
+
+    vols_totaux.sort(key=lambda x: x["heure"])
+
+    return {"data": vols_totaux, "performance_cumulee": score_cumule}
+
+@app.get("/api/stats/pistes")
+def get_stats_pistes():
+    return get_stats_historique("jour")
+
+@app.get("/api/stats/historique")
+def get_stats_historique(periode: str = "jour"):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    maintenant = datetime.now()
+    if periode == "jour":
+        date_limite = maintenant.replace(hour=0, minute=0, second=0, microsecond=0)
+    elif periode == "semaine":
+        date_limite = maintenant - timedelta(weeks=1)
+    elif periode == "mois":
+        date_limite = maintenant - timedelta(days=30)
+    elif periode == "annee":
+        date_limite = maintenant - timedelta(days=365)
+
+    date_limite_str = date_limite.strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute("SELECT COUNT(*) FROM vols_detectes WHERE horaire_passage >= ?", (date_limite_str,))
+    total = cursor.fetchone()[0]
+
+    if total == 0:
+        conn.close()
+        return {
+            "total": 0,
+            "axes": {"Axe 05/23 (Principal)": 0, "Axe 11/29 (Secondaire)": 0},
+            "pistes": {
+                "Piste 05": {"pourcentage": 0, "decollages": 0, "atterrissages": 0},
+                "Piste 23": {"pourcentage": 0, "decollages": 0, "atterrissages": 0},
+                "Piste 11": {"pourcentage": 0, "decollages": 0, "atterrissages": 0},
+                "Piste 29": {"pourcentage": 0, "decollages": 0, "atterrissages": 0}
+            }
+        }
+
+    cursor.execute("SELECT portail_nom, type_mouvement, COUNT(*) FROM vols_detectes WHERE horaire_passage >= ? GROUP BY portail_nom, type_mouvement", (date_limite_str,))
+    lignes = cursor.fetchall()
+    conn.close()
+
+    pistes_stats = {
+        "Piste 05": {"pourcentage": 0, "decollages": 0, "atterrissages": 0},
+        "Piste 23": {"pourcentage": 0, "decollages": 0, "atterrissages": 0},
+        "Piste 11": {"pourcentage": 0, "decollages": 0, "atterrissages": 0},
+        "Piste 29": {"pourcentage": 0, "decollages": 0, "atterrissages": 0}
+    }
+    total_axe_05_23 = 0
+    total_axe_11_29 = 0
+
+    for nom_piste, type_mouv, count in lignes:
+        count = int(count)
+        if nom_piste in pistes_stats:
+            if type_mouv in ["decollage", "décollage"]:
+                pistes_stats[nom_piste]["decollages"] += count
+            else:
+                pistes_stats[nom_piste]["atterrissages"] += count
+
+            if nom_piste in ["Piste 05", "Piste 23"]:
+                total_axe_05_23 += count
+            elif nom_piste in ["Piste 11", "Piste 29"]:
+                total_axe_11_29 += count
+
+    for nom_piste, data in pistes_stats.items():
+        p_total = data["decollages"] + data["atterrissages"]
+        data["pourcentage"] = round((p_total / total) * 100, 1) if total > 0 else 0
+
+    stats_axes = {
+        "Axe 05/23 (Principal)": round((total_axe_05_23 / total) * 100, 1) if total_axe_05_23 > 0 else 0,
+        "Axe 11/29 (Secondaire)": round((total_axe_11_29 / total) * 100, 1) if total_axe_11_29 > 0 else 0
+    }
+
+    return {"total": total, "axes": stats_axes, "pistes": pistes_stats}
+
+@app.post("/api/login")
+def login(data: LoginData):
+    comptes_autorises = {"admin": "Radar2026", "crews95": "Radar-1129", "potei": "avion33", "famille": "bordeaux"}
+    if data.username in comptes_autorises and comptes_autorises[data.username] == data.password:
+        return {"success": True, "token": f"token_valide_{data.username}"}
+    return {"success": False, "message": "Identifiants incorrects"}
+
+@app.get("/api/score")
+def get_verification_score():
+    try:
+        conn = sqlite3.connect("/home/ubuntu/stats_des_pistes/backend/bordeaux_stats.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT score_percentage, date_calcul FROM scores_verification ORDER BY date_calcul DESC LIMIT 1")
+        row = cursor.fetchone()
+        conn.close()
+        if row:
+            return {"score": row[0], "date": row[1]}
+        return {"score": None, "date": None}
+    except Exception as e:
+        return {"error": str(e), "score": None}

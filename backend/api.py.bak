@@ -1,0 +1,264 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import sqlite3
+import requests
+from datetime import datetime, timedelta
+from bs4 import BeautifulSoup
+import random
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+DB_FILE = "bordeaux_stats.db"
+
+CACHED_EXPECTED = None
+LAST_FETCH_TIME = None
+NEXT_FETCH_INTERVAL = 0
+
+try:
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute("ALTER TABLE vols_detectes ADD COLUMN type_mouvement TEXT DEFAULT 'atterrissage'")
+    conn.commit()
+    conn.close()
+except sqlite3.OperationalError:
+    pass
+
+class LoginData(BaseModel):
+    username: str
+    password: str
+
+@app.get("/api/vols/direct")
+def get_vols_direct():
+    url = "https://api.adsb.lol/v2/lat/44.8283/lon/-0.7156/dist/15"
+    try:
+        response = requests.get(url, timeout=3)
+        if response.status_code == 200:
+            ac = response.json().get("ac", [])
+            vols_formates = []
+            for avion in ac:
+                callsign = avion.get("flight", "").strip()
+                if not callsign:
+                    callsign = "ANONYME"
+
+                alt_raw = avion.get("alt_baro", 0)
+                if isinstance(alt_raw, (int, float)):
+                    alt_m = int(alt_raw * 0.3048)
+                elif isinstance(alt_raw, str) and alt_raw.strip().isdigit():
+                    alt_m = int(float(alt_raw) * 0.3048)
+                else:
+                    alt_m = 0
+
+                vols_formates.append({
+                    "callsign": callsign,
+                    "type": avion.get("t", "UNKN"),
+                    "latitude": avion.get("lat"),
+                    "longitude": avion.get("lon"),
+                    "altitude": f"{alt_m}m",
+                    "vitesse": avion.get("gs", 0),
+                    "cap": avion.get("track", 0),
+                })
+            return {"data": vols_formates}
+    except Exception as e:
+        print(f"[-] Erreur de liaison direct radar : {e}")
+    return {"data": []}
+
+@app.get("/api/vols/expected")
+def get_vols_expected():
+    global CACHED_EXPECTED, LAST_FETCH_TIME, NEXT_FETCH_INTERVAL
+    
+    now = datetime.now()
+    
+    if CACHED_EXPECTED is not None and LAST_FETCH_TIME is not None:
+        if (now - LAST_FETCH_TIME).total_seconds() < NEXT_FETCH_INTERVAL:
+            return CACHED_EXPECTED
+
+    date_aujourdhui = now.strftime("%d/%m/%Y")
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+        'Accept': 'application/json, text/javascript, */*; q=0.01',
+        'X-Requested-With': 'XMLHttpRequest'
+    }
+    
+    # Récupération de tous les callsigns détectés par l'antenne depuis minuit aujourd'hui
+    minuit = now.replace(hour=0, minute=0, second=0, microsecond=0).strftime("%Y-%m-%d %H:%M:%S")
+    callsigns_detectes = []
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT callsign FROM vols_detectes WHERE horaire_passage >= ?", (minuit,))
+        callsigns_detectes = [row[0].strip().lower() for row in cursor.fetchall() if row[0]]
+        conn.close()
+    except Exception as e:
+        print(f"[-] Erreur récupération historiques du jour : {e}")
+
+    def verifier_detection(vol_num):
+        v_clean = "".join(c for c in vol_num if c.isalnum()).lower()
+        if not v_clean:
+            return False
+        for d in callsigns_detectes:
+            d_clean = "".join(c for c in d if c.isalnum()).lower()
+            if v_clean == d_clean or v_clean in d_clean or d_clean in v_clean:
+                return True
+        return False
+
+    vols_totaux = []
+    
+    # 1. Arrivées
+    try:
+        url_in = f"https://www.bordeaux.aeroport.fr/ajax/flights?w=in&date={date_aujourdhui}&time=00:00&_wrapper_format=drupal_ajax"
+        res_in = requests.post(url_in, headers=headers, timeout=5)
+        if res_in.status_code == 200:
+            for cmd in res_in.json():
+                if cmd.get("command") == "insert" and "data" in cmd:
+                    soup = BeautifulSoup(cmd["data"], "html.parser")
+                    for row in soup.find_all("tr"):
+                        tds = row.find_all("td")
+                        if len(tds) >= 4:
+                            vol_num = tds[2].get_text(" / ", strip=True)
+                            vols_totaux.append({
+                                "type": "arrivée",
+                                "heure": tds[0].get_text(strip=True),
+                                "ville": tds[1].get_text(" / ", strip=True),
+                                "vol": vol_num,
+                                "compagnie": tds[3].get_text(" / ", strip=True),
+                                "statut": tds[5].get_text(strip=True) if len(tds) >= 6 else "",
+                                "detecte": verifier_detection(vol_num)
+                            })
+                    break
+    except Exception as e:
+        print(f"[-] Erreur cache arrivées : {e}")
+
+    # 2. Départs
+    try:
+        url_out = f"https://www.bordeaux.aeroport.fr/ajax/flights?w=out&date={date_aujourdhui}&time=00:00&_wrapper_format=drupal_ajax"
+        res_out = requests.post(url_out, headers=headers, timeout=5)
+        if res_out.status_code == 200:
+            for cmd in res_out.json():
+                if cmd.get("command") == "insert" and "data" in cmd:
+                    soup = BeautifulSoup(cmd["data"], "html.parser")
+                    for row in soup.find_all("tr"):
+                        tds = row.find_all("td")
+                        if len(tds) >= 4:
+                            vol_num = tds[2].get_text(" / ", strip=True)
+                            vols_totaux.append({
+                                "type": "départ",
+                                "heure": tds[0].get_text(strip=True),
+                                "ville": tds[1].get_text(" / ", strip=True),
+                                "vol": vol_num,
+                                "compagnie": tds[3].get_text(" / ", strip=True),
+                                "statut": tds[5].get_text(strip=True) if len(tds) >= 6 else "",
+                                "detecte": verifier_detection(vol_num)
+                            })
+                    break
+    except Exception as e:
+        print(f"[-] Erreur cache départs : {e}")
+
+    vols_totaux.sort(key=lambda x: x["heure"])
+    
+    CACHED_EXPECTED = {"data": vols_totaux}
+    LAST_FETCH_TIME = now
+    NEXT_FETCH_INTERVAL = 21600 + random.randint(-1800, 1800)
+    
+    return CACHED_EXPECTED
+
+@app.get("/api/stats/pistes")
+def get_stats_pistes():
+    return get_stats_historique("jour")
+
+@app.get("/api/stats/historique")
+def get_stats_historique(periode: str = "jour"):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    maintenant = datetime.now()
+    if periode == "jour":
+        date_limite = maintenant.replace(hour=0, minute=0, second=0, microsecond=0)
+    elif periode == "semaine":
+        date_limite = maintenant - timedelta(weeks=1)
+    elif periode == "mois":
+        date_limite = maintenant - timedelta(days=30)
+    elif periode == "annee":
+        date_limite = maintenant - timedelta(days=365)
+
+    date_limite_str = date_limite.strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute("SELECT COUNT(*) FROM vols_detectes WHERE horaire_passage >= ?", (date_limite_str,))
+    total = cursor.fetchone()[0]
+
+    if total == 0:
+        conn.close()
+        return {
+            "total": 0,
+            "axes": {"Axe 05/23 (Principal)": 0, "Axe 11/29 (Secondaire)": 0},
+            "pistes": {
+                "Piste 05": {"pourcentage": 0, "decollages": 0, "atterrissages": 0},
+                "Piste 23": {"pourcentage": 0, "decollages": 0, "atterrissages": 0},
+                "Piste 11": {"pourcentage": 0, "decollages": 0, "atterrissages": 0},
+                "Piste 29": {"pourcentage": 0, "decollages": 0, "atterrissages": 0}
+            }
+        }
+
+    cursor.execute("SELECT portail_nom, type_mouvement, COUNT(*) FROM vols_detectes WHERE horaire_passage >= ? GROUP BY portail_nom, type_mouvement", (date_limite_str,))
+    lignes = cursor.fetchall()
+    conn.close()
+
+    pistes_stats = {
+        "Piste 05": {"pourcentage": 0, "decollages": 0, "atterrissages": 0},
+        "Piste 23": {"pourcentage": 0, "decollages": 0, "atterrissages": 0},
+        "Piste 11": {"pourcentage": 0, "decollages": 0, "atterrissages": 0},
+        "Piste 29": {"pourcentage": 0, "decollages": 0, "atterrissages": 0}
+    }
+    total_axe_05_23 = 0
+    total_axe_11_29 = 0
+
+    for nom_piste, type_mouv, count in lignes:
+        count = int(count)
+        if nom_piste in pistes_stats:
+            if type_mouv in ["decollage", "décollage"]:
+                pistes_stats[nom_piste]["decollages"] += count
+            else:
+                pistes_stats[nom_piste]["atterrissages"] += count
+
+            if nom_piste in ["Piste 05", "Piste 23"]:
+                total_axe_05_23 += count
+            elif nom_piste in ["Piste 11", "Piste 29"]:
+                total_axe_11_29 += count
+
+    for nom_piste, data in pistes_stats.items():
+        p_total = data["decollages"] + data["atterrissages"]
+        data["pourcentage"] = round((p_total / total) * 100, 1) if total > 0 else 0
+
+    stats_axes = {
+        "Axe 05/23 (Principal)": round((total_axe_05_23 / total) * 100, 1) if total_axe_05_23 > 0 else 0,
+        "Axe 11/29 (Secondaire)": round((total_axe_11_29 / total) * 100, 1) if total_axe_11_29 > 0 else 0
+    }
+
+    return {"total": total, "axes": stats_axes, "pistes": pistes_stats}
+
+@app.post("/api/login")
+def login(data: LoginData):
+    comptes_autorises = {"admin": "Radar2026", "crews95": "Radar-1129", "potei": "avion33", "famille": "bordeaux"}
+    if data.username in comptes_autorises and comptes_autorises[data.username] == data.password:
+        return {"success": True, "token": f"token_valide_{data.username}"}
+    return {"success": False, "message": "Identifiants incorrects"}
+
+@app.get("/api/score")
+def get_verification_score():
+    try:
+        conn = sqlite3.connect("/home/ubuntu/stats_des_pistes/backend/bordeaux_stats.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT score_percentage, date_calcul FROM scores_verification ORDER BY date_calcul DESC LIMIT 1")
+        row = cursor.fetchone()
+        conn.close()
+        if row:
+            return {"score": row[0], "date": row[1]}
+        return {"score": None, "date": None}
+    except Exception as e:
+        return {"error": str(e), "score": None}
