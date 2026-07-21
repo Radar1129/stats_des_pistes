@@ -677,7 +677,7 @@
     "ville": "BRISTOL",
     "vol": "U22769",
     "compagnie": "easyJet",
-    "statut": "Prévu à 19:25"
+    "statut": "Atterri à 19:26"
   },
   {
     "type": "Arrivée",
@@ -813,7 +813,7 @@
     "ville": "ZURICH-KLOTEN",
     "vol": "LX552",
     "compagnie": "Swiss",
-    "statut": "Prévu à 19:28"
+    "statut": "Atterri à 19:30"
   },
   {
     "type": "Départ",
@@ -829,7 +829,7 @@
     "ville": "LYON-ST EXUPERY",
     "vol": "EJU1819",
     "compagnie": "easyJet",
-    "statut": "Embarquement :Terminal billi - porte 31"
+    "statut": "Embarquement :Terminal billi"
   },
   {
     "type": "Départ",
@@ -861,7 +861,7 @@
     "ville": "NAPLES-CAPODICHINO",
     "vol": "V72447",
     "compagnie": "Volotea",
-    "statut": "Prévu à 19:58"
+    "statut": "Prévu à 19:52"
   },
   {
     "type": "Départ",
@@ -893,7 +893,7 @@
     "ville": "GENEVE-COINTRIN",
     "vol": "EZS1391",
     "compagnie": "easyJet",
-    "statut": ""
+    "statut": "Prévu à 20:33"
   },
   {
     "type": "Départ",

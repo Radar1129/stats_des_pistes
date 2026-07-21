@@ -15,3 +15,12 @@
 ### 🛠️ Corrections & Robustesse React
 - **Restructuration de `App.jsx`** : Réalignement strict de la séquence d'exécution des Hooks React (`useState` $\rightarrow$ Calculs & Matching $\rightarrow$ `useEffect` $\rightarrow$ Early Returns $\rightarrow$ JSX) pour éradiquer la zone morte temporaire et l'erreur React #310.
 - **Audit Scraper (`check_aerovision.py`)** : Inspection du cache JSON (`scraped_cache.json`) et analyse de la tolérance aux anomalies de publication sur le site de l'aéroport.
+
+## [2026-07-21] - Stabilisation des phases de vol (Anti-bruit ADS-B)
+
+### 🛠️ Améliorations
+- **Suppression du label `EN TRANSIT`** : Remplacé par **`✈️ EN VOL`** pour un affichage plus clair.
+- **Ajout de seuils de tolérance (Anti-yoyo)** dans `getPhaseDeVol` :
+  - **`🚕 ROULAGE / SOL`** : Prioritaire pour toute altitude $< 100\text{ m}$ avec faible taux vertical, ou altitude $< 300\text{ m}$ sans pente forte.
+  - **`🛫 DÉCOLLAGE`** : Déclenché uniquement si $\text{txVert} > +150\text{ ft/min}$ (élimine les micro-variations).
+  - **`🛬 EN APPROCHE`** : Déclenché uniquement si $\text{txVert} < -150\text{ ft/min}$.

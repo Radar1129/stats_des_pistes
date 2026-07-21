@@ -139,10 +139,19 @@ function App() {
   const getPhaseDeVol = (avion) => {
     const tx = parseFloat(avion.txVert || avion.taux_vertical) || 0;
     const alt = parseInt(avion.altM || avion.altitude) || 0;
-    if (tx > 0) return "🛫 DÉCOLLAGE";
-    if (tx < 0) return "🛬 EN APPROCHE";
+
+    // 1. Priorité au sol : Altitude faible et variation modérée
+    if (alt < 100 && Math.abs(tx) < 150) return "🚕 ROULAGE / SOL";
+
+    // 2. Mouvements francs (marge anti-bruit de 150 ft/min)
+    if (tx > 150) return "🛫 DÉCOLLAGE";
+    if (tx < -150) return "🛬 EN APPROCHE";
+
+    // 3. Basse altitude sans grosse pente = Roulage
     if (alt < 300) return "🚕 ROULAGE / SOL";
-    return "✈️ EN TRANSIT";
+
+    // 4. Par défaut
+    return "✈️ EN VOL";
   };
 
   const checkUrgence = (squawk) => {
