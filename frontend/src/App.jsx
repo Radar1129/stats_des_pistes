@@ -60,6 +60,7 @@ function App() {
   const [historiqueStats, setHistoriqueStats] = useState({ total: 0, axes: {}, pistes: {}, collecte_initiee: "Inconnue" });
 
   const [volsPrevus, setVolsPrevus] = useState([]);
+  const [horsProgramme, setHorsProgramme] = useState([]);
   const [scoreGlobal, setScoreGlobal] = useState(0);
   const [preDetectesList, setPreDetectesList] = useState(() => JSON.parse(localStorage.getItem('radar_pre_detectes') || '[]'));
 
@@ -265,6 +266,7 @@ function App() {
       const t = Date.now();
       fetch(`${API_BASE_URL}/api/stats/pistes?t=${t}`).then(res => res.json()).then(setStats).catch(console.error);
       fetch(`${API_BASE_URL}/api/vols/expected?t=${t}`).then(res => res.json()).then(data => setVolsPrevus(data.data || [])).catch(console.error);
+    fetch(`${API_BASE_URL}/api/vols/hors-programme?t=${t}`).then(res => res.json()).then(data => { if (data && data.status === 'success') setHorsProgramme(data.data || []); }).catch(console.error);
       fetch(`${API_BASE_URL}/api/score?t=${t}`).then(res => res.json()).then(data => setScoreGlobal(Math.round(data.score || 0))).catch(console.error);
       fetch(`${API_BASE_URL}/api/stats/historique?periode=${periode}&t=${t}`).then(res => res.json()).then(setHistoriqueStats).catch(console.error);
 
@@ -596,6 +598,35 @@ L'algorithme isole l'avion le plus pertinent via un plafond adaptatif (1500m en 
       <section style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginBottom: '20px' }}>
           <h2 style={{ margin: 0, fontSize: '1.1em', fontWeight: 'bold', color: '#0f2042', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+
+        {/* BLOC AVIATION GÉNÉRALE / HORS PROGRAMME */}
+        <div style={{ backgroundColor: '#fff', borderRadius: '8px', padding: '15px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', marginTop: '20px', marginBottom: '20px' }}>
+          <h3 style={{ margin: '0 0 15px 0', fontSize: '1.1em', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span>🛩️ Aviation Générale & Hors-Programme</span>
+            <span style={{ fontSize: '0.8em', backgroundColor: '#e0f7fa', color: '#006064', padding: '3px 8px', borderRadius: '12px' }}>
+              {horsProgramme.length} détecté(s) (24h)
+            </span>
+          </h3>
+          {horsProgramme.length === 0 ? (
+            <p style={{ color: '#777', fontSize: '0.9em', textAlign: 'center', margin: '20px 0' }}>Aucun vol privé ou hors-programme détecté récemment.</p>
+          ) : (
+            <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+              {horsProgramme.map((vol, idx) => (
+                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', borderBottom: '1px solid #eee', fontSize: '0.85em' }}>
+                  <div>
+                    <strong style={{ color: '#d32f2f' }}>{vol.callsign}</strong>
+                    <div style={{ color: '#555', marginTop: '4px' }}>{vol.action} - {vol.origine} ➔ {vol.destination}</div>
+                  </div>
+                  <div style={{ textAlign: 'right', color: '#666' }}>
+                    <div>{new Date(vol.horaire).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}</div>
+                    <div style={{ fontSize: '0.9em', color: '#999' }}>Alt: {Math.round(vol.altitude)}m</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
             ⚙️ ANALYSE DES STATISTIQUES SUR LA PÉRIODE :
             {historiqueStats.collecte_initiee && (
               <span style={{ fontSize: '0.75em', color: '#7f8c8d', fontWeight: 'normal', textTransform: 'none', marginLeft: '10px' }}>

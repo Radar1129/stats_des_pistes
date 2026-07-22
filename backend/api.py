@@ -308,3 +308,51 @@ def get_stats_historique(periode: str = "jour"):
         "axes": stats_axes,
         "pistes": pistes_stats
     }
+
+
+
+@app.get('/api/vols/hors-programme')
+def get_vols_hors_programme():
+    try:
+        from datetime import datetime, timedelta
+        import sqlite3
+
+        # 1. Récupération des callsigns prévus dans lfbd_schedule.db
+        conn_sched = sqlite3.connect('/home/ubuntu/stats_des_pistes/lfbd_schedule.db')
+        c_sched = conn_sched.cursor()
+        date_today = datetime.now().strftime('%Y-%m-%d')
+        c_sched.execute("SELECT callsign FROM flights WHERE scheduled_date = ?", (date_today,))
+        prevus = set(r[0].strip().upper() for r in c_sched.fetchall() if r[0])
+        conn_sched.close()
+
+        # 2. Récupération des détections dans bordeaux_stats.db
+        conn_radar = sqlite3.connect('/home/ubuntu/stats_des_pistes/backend/bordeaux_stats.db')
+        c_radar = conn_radar.cursor()
+        date_24h_ago = (datetime.now() - timedelta(hours=24)).strftime('%Y-%m-%d %H:%M:%S')
+
+        c_radar.execute("""
+            SELECT callsign, action, horaire_passage, altitude_metres, origine, destination
+            FROM vols_detectes 
+            WHERE horaire_passage >= ?
+            ORDER BY horaire_passage DESC
+        """, (date_24h_ago,))
+        lignes = c_radar.fetchall()
+        conn_radar.close()
+
+        hors_prog = []
+        vus = set()
+        for callsign, action, horaire, alt, orig, dest in lignes:
+            cs = callsign.strip().upper() if callsign else ''
+            if cs and cs not in prevus and cs not in vus:
+                vus.add(cs)
+                hors_prog.append({
+                    'callsign': cs,
+                    'action': action,
+                    'horaire': horaire,
+                    'altitude': alt,
+                    'origine': orig or 'Inconnu',
+                    'destination': dest or 'Inconnu'
+                })
+        return {'status': 'success', 'data': hors_prog}
+    except Exception as e:
+        return {'status': 'error', 'message': str(e)}
