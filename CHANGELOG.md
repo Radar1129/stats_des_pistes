@@ -48,3 +48,6 @@
 ### Corrigé (Suite)
 * **API Backend (`backend/api.py`)** : Résolution du "bug de minuit" (décalage de fuseau horaire entre l'UTC du serveur et l'heure locale) sur la route `/api/vols/expected`. Utilisation de la librairie `pytz` pour forcer strictement le fuseau `Europe/Paris`.
 * **API Backend** : Correction d'un bug d'indentation dans la boucle de formatage qui empêchait l'affichage complet du programme (seul le dernier vol de la journée était renvoyé au frontend).
+
+### Documentation
+* **Frontend (`App.jsx`)** : Confirmation du cycle de rafraîchissement UI. Le frontend effectue un polling toutes les 10 secondes (`10000 ms`) sur l'endpoint `/api/vols/expected` pour synchroniser l'affichage des coches "✓ Détecté" dès que le backend confirme un passage radar.

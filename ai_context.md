@@ -394,3 +394,10 @@ La fonction `isBordeauxMovement(avion)` agit comme un filtre de mise en évidenc
 
 ## 🌍 Gestion des Fuseaux Horaires (Leçon apprise)
 - **Heure Serveur vs Heure Locale** : Le serveur Ubuntu opérant par défaut en UTC, toutes les comparaisons de dates dans l'API (notamment pour le programme du jour) doivent explicitement forcer le fuseau horaire `Europe/Paris` (via `pytz` ou un delta temporel sécurisé) pour éviter des incohérences d'affichage entre minuit et 02h00 du matin.
+
+## ⏱️ Fréquence de Rafraîchissement (Polling Frontend)
+- **Intervalle de boucle** : Fixé à **10 secondes** (`setInterval(..., 10000)`) dans React (`App.jsx`).
+- **Flux de données** :
+  1. Le navigateur interroge `/api/vols/expected` toutes les 10s.
+  2. L'API consulte `bordeaux_stats.db` et le programme `lfbd_schedule.db`.
+  3. Dès le retour de `"detecte": True`, le composant React se ré-exécute et la coche verte s'affiche.
