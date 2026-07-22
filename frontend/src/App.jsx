@@ -102,6 +102,7 @@ function App() {
   const currentMinutes = h * 60 + m;
 
   let targetIndex = volsPrevus.findIndex(v => {
+    if (v.is_hier) return false;
     if (!v.heure) return false;
     const [vh, vm] = v.heure.split(':').map(Number);
     return (vh * 60 + vm) >= currentMinutes;
@@ -295,7 +296,7 @@ function App() {
 
   useEffect(() => {
     if (matchedProg && matchedProg.vol && matchedProg.heure) {
-      const key = `${matchedProg.vol}_${matchedProg.heure}`;
+      const key = `${matchedProg.vol}_${matchedProg.is_hier && <span style={{fontSize: "0.72em", backgroundColor: "#6c757d", color: "white", padding: "2px 5px", borderRadius: "3px", marginRight: "6px", fontWeight: "bold"}}>🌙 Hier</span>}{matchedProg.heure}`;
       setPreDetectesList(prev => {
         if (!prev.includes(key)) {
           const next = [...prev, key];
@@ -339,14 +340,15 @@ function App() {
     </div>
   );
 
-  const volsActifs = volsPrevus.filter(v => {
+  const volsDuJour = volsPrevus.filter(v => !v.is_hier);
+  const volsActifs = volsDuJour.filter(v => {
     const s = (v.statut || v.remarque || '').toLowerCase();
     return !s.includes('annulé') && !s.includes('cancel');
   });
 
   const totalPrevus = volsActifs.length;
   const totalDetectes = volsActifs.filter(v => v.detecte === true || v.detecte === "true" || v.detecte === 2).length;
-  const totalAnnules = volsPrevus.length - volsActifs.length;
+  const totalAnnules = volsDuJour.length - volsActifs.length;
 
   // 8. RENDU JSX PRINCIPAL
   return (
@@ -479,7 +481,7 @@ L'algorithme isole l'avion le plus pertinent via un plafond adaptatif (1500m en 
                           outlineOffset: '-2px'
                         }}
                       >
-                        <td style={{ padding: '4px 8px', fontWeight: 'bold', color: isAlert || isCancelled ? '#e74c3c' : '#333', textDecoration: isCancelled ? 'line-through' : 'none' }}>{v.heure}</td>
+                        <td style={{ padding: '4px 8px', fontWeight: 'bold', color: isAlert || isCancelled ? '#e74c3c' : '#333', textDecoration: isCancelled ? 'line-through' : 'none' }}>{v.is_hier && <span style={{fontSize: '0.7em', backgroundColor: '#6c757d', color: 'white', padding: '1px 5px', borderRadius: '3px', marginRight: '5px', fontWeight: 'bold'}}>🌙 Hier</span>}{v.heure}</td>
                         <td style={{ padding: '4px 8px' }}>
                           <span style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '0.9em', fontWeight: 'bold', backgroundColor: '#fff', border: `1px solid ${isDepart ? '#f57c00' : '#388e3c'}`, color: isDepart ? '#f57c00' : '#388e3c' }}>
                             {isDepart ? 'Départ' : 'Arrivée'}

@@ -84,13 +84,16 @@ def get_vols_expected():
             now_tz = datetime.utcnow() + timedelta(hours=2)
             
         today_iso = now_tz.date().isoformat()
+        yesterday_iso = (now_tz - timedelta(days=1)).date().isoformat()
+        
+        # 🌙 MODE NUIT : Entre minuit et 5h, inclusion de la veille et du jour J
+        is_night_mode = now_tz.hour < 5
         
         db_path = "/home/ubuntu/stats_des_pistes/lfbd_schedule.db"
         stats_db_path = "/home/ubuntu/stats_des_pistes/backend/bordeaux_stats.db"
         
-        # Plage de recherche élargie en BDD (de hier 20h00 à demain 04h00) pour couvrir les sauts de minuit
-        start_search = (now_tz - timedelta(days=1)).strftime("%Y-%m-%d 20:00:00")
-        end_search = (now_tz + timedelta(days=1)).strftime("%Y-%m-%d 04:00:00")
+        start_search = (now_tz - timedelta(days=2)).strftime("%Y-%m-%d 20:00:00")
+        end_search = (now_tz + timedelta(days=1)).strftime("%Y-%m-%d 10:00:00")
         
         detectes_raw = []
         try:
@@ -106,19 +109,27 @@ def get_vols_expected():
                     except Exception:
                         pass
             conn_stats.close()
-        except Exception as e:
-            print(f"Erreur lecture bordeaux_stats.db: {e}")
+        except Exception:
+            pass
             
-        # Programme théorique du jour
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        cursor.execute('''
-            SELECT direction, scheduled_time, origin_dest, callsign, airline, status
-            FROM flights
-            WHERE scheduled_date = ?
-            ORDER BY scheduled_time ASC
-        ''', (today_iso,))
+        
+        if is_night_mode:
+            cursor.execute('''
+                SELECT scheduled_date, direction, scheduled_time, origin_dest, callsign, airline, status
+                FROM flights
+                WHERE (scheduled_date = ? AND scheduled_time >= '17:00') OR (scheduled_date = ?)
+                ORDER BY scheduled_date ASC, scheduled_time ASC
+            ''', (yesterday_iso, today_iso))
+        else:
+            cursor.execute('''
+                SELECT scheduled_date, direction, scheduled_time, origin_dest, callsign, airline, status
+                FROM flights
+                WHERE scheduled_date = ?
+                ORDER BY scheduled_time ASC
+            ''', (today_iso,))
         rows = cursor.fetchall()
         conn.close()
 
@@ -126,12 +137,12 @@ def get_vols_expected():
         for r in rows:
             prog_callsign = (r["callsign"] or "").strip().upper()
             prog_time_str = r["scheduled_time"]
-            
-            # Reconstruction de la date/heure théorique complète
+            prog_date_str = r["scheduled_date"] if "scheduled_date" in r.keys() else today_iso
+                
             dt_prog = None
             if prog_time_str:
                 try:
-                    dt_prog = datetime.strptime(f"{today_iso} {prog_time_str}", "%Y-%m-%d %H:%M")
+                    dt_prog = datetime.strptime(f"{prog_date_str} {prog_time_str}", "%Y-%m-%d %H:%M")
                 except Exception:
                     pass
             
@@ -139,24 +150,19 @@ def get_vols_expected():
             prog_nums = "".join(filter(str.isdigit, prog_callsign))
             
             if dt_prog:
-                # Fenêtre de tolérance : +/- 3 heures autour de l'heure théorique
                 window_start = dt_prog - timedelta(hours=3)
                 window_end = dt_prog + timedelta(hours=3)
-                
                 for det in detectes_raw:
                     if window_start <= det["dt"] <= window_end:
                         det_cs = det["callsign"]
-                        # Matching exact
                         if prog_callsign == det_cs:
                             is_detecte = True
                             break
-                        # Matching numérique
                         det_nums = "".join(filter(str.isdigit, det_cs))
                         if prog_nums and det_nums and prog_nums == det_nums:
                             is_detecte = True
                             break
             else:
-                # Fallback si l'heure du vol était invalide
                 for det in detectes_raw:
                     if prog_callsign == det["callsign"]:
                         is_detecte = True
@@ -169,7 +175,8 @@ def get_vols_expected():
                 "vol": r["callsign"],
                 "compagnie": r["airline"],
                 "statut": r["status"],
-                "detecte": is_detecte
+                "detecte": is_detecte,
+                "is_hier": (prog_date_str == yesterday_iso)
             })
             
         return {"data": formatted_vols}
