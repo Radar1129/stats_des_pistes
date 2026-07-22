@@ -518,7 +518,7 @@ L'algorithme isole l'avion le plus pertinent via un plafond adaptatif (1500m en 
             🧭 Carte de Suivi Radar <Tooltip content={`Trafic dans un rayon de 15km`} /> <span style={{ fontSize: '0.85em', color: '#7f8c8d', fontWeight: 'normal' }}>(Temps Réel)</span>
           </div>
           <div style={{ height: '350px', width: '100%', borderRadius: '6px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-            <MapContainer center={[44.8283, -0.7156]} zoom={11} style={{ height: '100%', width: '100%', zIndex: 1 }}>
+            <MapContainer center={[44.8283, -0.7156]} zoom={9} style={{ height: '100%', width: '100%', zIndex: 1 }}>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap contributors' />
               <Polyline positions={axePiste0523} color="#3498db" weight={6} opacity={0.4} dashArray="8, 8" />
               <Polyline positions={axePiste1129} color="#e74c3c" weight={6} opacity={0.4} dashArray="8, 8" />

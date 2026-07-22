@@ -51,3 +51,6 @@
 
 ### Documentation
 * **Frontend (`App.jsx`)** : Confirmation du cycle de rafraîchissement UI. Le frontend effectue un polling toutes les 10 secondes (`10000 ms`) sur l'endpoint `/api/vols/expected` pour synchroniser l'affichage des coches "✓ Détecté" dès que le backend confirme un passage radar.
+
+### Interface & UX
+* **Carte Radar (`src/App.jsx`)** : Réduction du niveau de zoom initial de la carte de 11 à 9 afin d'offrir une vue plus panoramique sur toute la région dès l'ouverture du tableau de bord.

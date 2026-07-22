@@ -401,3 +401,6 @@ La fonction `isBordeauxMovement(avion)` agit comme un filtre de mise en évidenc
   1. Le navigateur interroge `/api/vols/expected` toutes les 10s.
   2. L'API consulte `bordeaux_stats.db` et le programme `lfbd_schedule.db`.
   3. Dès le retour de `"detecte": True`, le composant React se ré-exécute et la coche verte s'affiche.
+
+## 🗺️ Configuration Carte (UI)
+- **Zoom Initial** : Fixé à **9** (au lieu de 11) dans `src/App.jsx` pour embrasser un périmètre régional plus large autour de LFBD dès le chargement de la page.
