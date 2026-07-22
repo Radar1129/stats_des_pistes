@@ -79,23 +79,37 @@ def get_vols_expected():
         try:
             import pytz
             tz = pytz.timezone('Europe/Paris')
-            today_iso = datetime.now(tz).date().isoformat()
+            now_tz = datetime.now(tz)
         except ImportError:
-            today_iso = (datetime.utcnow() + timedelta(hours=2)).date().isoformat()
+            now_tz = datetime.utcnow() + timedelta(hours=2)
             
+        today_iso = now_tz.date().isoformat()
+        
         db_path = "/home/ubuntu/stats_des_pistes/lfbd_schedule.db"
         stats_db_path = "/home/ubuntu/stats_des_pistes/backend/bordeaux_stats.db"
         
-        detectes = []
+        # Plage de recherche élargie en BDD (de hier 20h00 à demain 04h00) pour couvrir les sauts de minuit
+        start_search = (now_tz - timedelta(days=1)).strftime("%Y-%m-%d 20:00:00")
+        end_search = (now_tz + timedelta(days=1)).strftime("%Y-%m-%d 04:00:00")
+        
+        detectes_raw = []
         try:
             conn_stats = sqlite3.connect(stats_db_path)
             c_stats = conn_stats.cursor()
-            c_stats.execute("SELECT DISTINCT callsign FROM vols_detectes WHERE substr(horaire_passage, 1, 10) = ?", (today_iso,))
-            detectes = [r[0].strip().upper() for r in c_stats.fetchall() if r[0]]
+            c_stats.execute("SELECT callsign, horaire_passage FROM vols_detectes WHERE horaire_passage >= ? AND horaire_passage <= ?", (start_search, end_search))
+            rows_det = c_stats.fetchall()
+            for r in rows_det:
+                if r[0] and r[1]:
+                    try:
+                        dt_det = datetime.strptime(r[1][:19], "%Y-%m-%d %H:%M:%S")
+                        detectes_raw.append({"callsign": r[0].strip().upper(), "dt": dt_det})
+                    except Exception:
+                        pass
             conn_stats.close()
         except Exception as e:
-            pass
+            print(f"Erreur lecture bordeaux_stats.db: {e}")
             
+        # Programme théorique du jour
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
@@ -111,19 +125,43 @@ def get_vols_expected():
         formatted_vols = []
         for r in rows:
             prog_callsign = (r["callsign"] or "").strip().upper()
+            prog_time_str = r["scheduled_time"]
+            
+            # Reconstruction de la date/heure théorique complète
+            dt_prog = None
+            if prog_time_str:
+                try:
+                    dt_prog = datetime.strptime(f"{today_iso} {prog_time_str}", "%Y-%m-%d %H:%M")
+                except Exception:
+                    pass
+            
             is_detecte = False
             prog_nums = "".join(filter(str.isdigit, prog_callsign))
             
-            for det in detectes:
-                if prog_callsign == det:
-                    is_detecte = True
-                    break
-                det_nums = "".join(filter(str.isdigit, det))
-                if prog_nums and det_nums and prog_nums == det_nums:
-                    is_detecte = True
-                    break
+            if dt_prog:
+                # Fenêtre de tolérance : +/- 3 heures autour de l'heure théorique
+                window_start = dt_prog - timedelta(hours=3)
+                window_end = dt_prog + timedelta(hours=3)
+                
+                for det in detectes_raw:
+                    if window_start <= det["dt"] <= window_end:
+                        det_cs = det["callsign"]
+                        # Matching exact
+                        if prog_callsign == det_cs:
+                            is_detecte = True
+                            break
+                        # Matching numérique
+                        det_nums = "".join(filter(str.isdigit, det_cs))
+                        if prog_nums and det_nums and prog_nums == det_nums:
+                            is_detecte = True
+                            break
+            else:
+                # Fallback si l'heure du vol était invalide
+                for det in detectes_raw:
+                    if prog_callsign == det["callsign"]:
+                        is_detecte = True
+                        break
 
-            # ---> LA CORRECTION EST ICI : Indentation correcte dans la boucle <---
             formatted_vols.append({
                 "type": "Arrivée" if r["direction"] == "in" else "Départ",
                 "heure": r["scheduled_time"],

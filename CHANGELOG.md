@@ -54,3 +54,6 @@
 
 ### Interface & UX
 * **Carte Radar (`src/App.jsx`)** : Réduction du niveau de zoom initial de la carte de 11 à 9 afin d'offrir une vue plus panoramique sur toute la région dès l'ouverture du tableau de bord.
+
+### Corrigé
+* **API Backend (`backend/api.py`)** : Implémentation d'une fenêtre glissante de $\pm 3$ heures sur la route `/api/vols/expected`. Résolution du problème des vols de nuit à cheval sur minuit : un vol prévu à 23h50 et détecté à 00h15 est désormais correctement associé et comptabilisé.

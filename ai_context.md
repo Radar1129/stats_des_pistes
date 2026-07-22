@@ -404,3 +404,6 @@ La fonction `isBordeauxMovement(avion)` agit comme un filtre de mise en évidenc
 
 ## 🗺️ Configuration Carte (UI)
 - **Zoom Initial** : Fixé à **9** (au lieu de 11) dans `src/App.jsx` pour embrasser un périmètre régional plus large autour de LFBD dès le chargement de la page.
+
+## 🕒 Matching Temporel des Vols (Fenêtre Glissante)
+- **Tolérance $\pm 3$h** : Dans `/api/vols/expected`, le matching entre le programme et les détections radar s'effectue sur un intervalle de $\pm 3$ heures autour de l'heure théorique du vol pour garantir une correspondance exacte même en cas de fort retard ou de franchissement du cap de minuit.
