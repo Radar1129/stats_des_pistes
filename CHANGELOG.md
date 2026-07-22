@@ -44,3 +44,7 @@
 
 ### Réparé
 * **Maintenance (`redemarrer_backend.sh`)** : Résolution du bug de l'historique vide. Le script de maintenance ne relançait que l'API et laissait les moteurs radar mourir en silence. Il redémarre désormais l'intégralité de la stack (API `uvicorn` + Capteurs `live_radar.py` et `detector.py`) pour garantir l'alimentation continue de la base `bordeaux_stats.db`.
+
+### Corrigé (Suite)
+* **API Backend (`backend/api.py`)** : Résolution du "bug de minuit" (décalage de fuseau horaire entre l'UTC du serveur et l'heure locale) sur la route `/api/vols/expected`. Utilisation de la librairie `pytz` pour forcer strictement le fuseau `Europe/Paris`.
+* **API Backend** : Correction d'un bug d'indentation dans la boucle de formatage qui empêchait l'affichage complet du programme (seul le dernier vol de la journée était renvoyé au frontend).

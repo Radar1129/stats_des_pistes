@@ -391,3 +391,6 @@ La fonction `isBordeauxMovement(avion)` agit comme un filtre de mise en évidenc
 ## 🔄 Architecture de Redémarrage (Mise à jour 2026-07-23)
 - **Script global (`redemarrer_backend.sh`)** : Gère désormais de façon unifiée le frontend/API et les daemons de collecte. La commande `pkill -9` cible obligatoirement `uvicorn`, `api.py`, `live_radar.py` et `detector.py` avant de tout relancer via `nohup`.
 - **Leçon apprise (Le paradoxe du Live vs Historique)** : Une alerte "Live" UI peut fonctionner parfaitement via les appels React directs, même si le backend d'enregistrement physique (`detector.py`) est mort. La présence des coches "✓ Détecté" dans le tableau dépend exclusivement de la survie du script `detector.py` et de ses écritures dans `bordeaux_stats.db`.
+
+## 🌍 Gestion des Fuseaux Horaires (Leçon apprise)
+- **Heure Serveur vs Heure Locale** : Le serveur Ubuntu opérant par défaut en UTC, toutes les comparaisons de dates dans l'API (notamment pour le programme du jour) doivent explicitement forcer le fuseau horaire `Europe/Paris` (via `pytz` ou un delta temporel sécurisé) pour éviter des incohérences d'affichage entre minuit et 02h00 du matin.

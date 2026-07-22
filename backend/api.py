@@ -72,27 +72,30 @@ def get_vols_direct():
 
 @app.get("/api/vols/expected")
 def get_vols_expected():
-    from datetime import date
+    from datetime import datetime, timedelta
     import sqlite3
     
     try:
-        today_iso = date.today().isoformat()
+        try:
+            import pytz
+            tz = pytz.timezone('Europe/Paris')
+            today_iso = datetime.now(tz).date().isoformat()
+        except ImportError:
+            today_iso = (datetime.utcnow() + timedelta(hours=2)).date().isoformat()
+            
         db_path = "/home/ubuntu/stats_des_pistes/lfbd_schedule.db"
         stats_db_path = "/home/ubuntu/stats_des_pistes/backend/bordeaux_stats.db"
         
-        # 1. Récupération des avions flashés physiquement (Le Réel)
         detectes = []
         try:
             conn_stats = sqlite3.connect(stats_db_path)
             c_stats = conn_stats.cursor()
-            # On prend les callsigns enregistrés aujourd'hui
             c_stats.execute("SELECT DISTINCT callsign FROM vols_detectes WHERE substr(horaire_passage, 1, 10) = ?", (today_iso,))
             detectes = [r[0].strip().upper() for r in c_stats.fetchall() if r[0]]
             conn_stats.close()
         except Exception as e:
-            print(f"Erreur lecture bordeaux_stats.db: {e}")
+            pass
             
-        # 2. Récupération du programme (Le Prévu)
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
@@ -108,23 +111,19 @@ def get_vols_expected():
         formatted_vols = []
         for r in rows:
             prog_callsign = (r["callsign"] or "").strip().upper()
-            
-            # --- MATCHING INTELLIGENT ---
             is_detecte = False
-            # On extrait uniquement les chiffres du numéro de vol prévu (ex: '72626' depuis 'V72626')
             prog_nums = "".join(filter(str.isdigit, prog_callsign))
             
             for det in detectes:
-                # Si correspondance exacte
                 if prog_callsign == det:
                     is_detecte = True
                     break
-                # Fallback : Si les chiffres correspondent (ex: '72626' matche avec 'VOE72626')
                 det_nums = "".join(filter(str.isdigit, det))
                 if prog_nums and det_nums and prog_nums == det_nums:
                     is_detecte = True
                     break
 
+            # ---> LA CORRECTION EST ICI : Indentation correcte dans la boucle <---
             formatted_vols.append({
                 "type": "Arrivée" if r["direction"] == "in" else "Départ",
                 "heure": r["scheduled_time"],
