@@ -31,26 +31,44 @@ def login(data: LoginData):
 
 @app.get("/api/vols/direct")
 def get_vols_direct():
-    try:
-        url = "https://api.adsb.lol/v2/lat/44.8283/lon/-0.7156/dist/15"
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=5) as response:
-            data = json.loads(response.read().decode())
-            ac_list = data.get("ac", [])
-            vols = []
-            for ac in ac_list:
-                vols.append({
-                    "callsign": ac.get("flight", "ANONYME").strip(),
-                    "latitude": ac.get("lat"),
-                    "longitude": ac.get("lon"),
-                    "altitude": ac.get("alt_baro", ac.get("alt_geom", 0)),
-                    "vitesse": ac.get("gs", 0),
-                    "cap": ac.get("track", 0),
-                    "taux_vertical": ac.get("baro_rate", 0)
-                })
-            return vols
-    except Exception:
-        return []
+    import urllib.request, json
+    from concurrent.futures import ThreadPoolExecutor
+
+    urls = [
+        "https://api.adsb.lol/v2/lat/44.8283/lon/-0.7156/dist/15",
+        "https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15"
+    ]
+    
+    def fetch_api(url):
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=3) as response:
+                return json.loads(response.read().decode()).get("ac", [])
+        except Exception as e:
+            print(f"Erreur API Radar ({url}): {e}")
+            return []
+
+    ac_list = []
+    # Interrogation simultanée des deux sources pour redondance (Bloc 1)
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        results = executor.map(fetch_api, urls)
+        for res in results:
+            if res:
+                ac_list = res
+                break
+    
+    vols = []
+    for ac in ac_list:
+        vols.append({
+            "callsign": ac.get("flight", "ANONYME").strip(),
+            "latitude": ac.get("lat"),
+            "longitude": ac.get("lon"),
+            "altitude": ac.get("alt_baro", ac.get("alt_geom", 0)),
+            "vitesse": ac.get("gs", 0),
+            "cap": ac.get("track", 0),
+            "taux_vertical": ac.get("baro_rate", 0)
+        })
+    return vols
 
 @app.get("/api/vols/expected")
 def get_vols_expected():

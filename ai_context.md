@@ -383,3 +383,7 @@ La fonction `isBordeauxMovement(avion)` agit comme un filtre de mise en évidenc
 - **API Backend (`backend/api.py`)** :
   - Endpoint `/api/vols/expected` : Lit directement dans `lfbd_schedule.db` filtré sur `scheduled_date = date('now')`.
   - Processus Uvicorn sur port `8000`.
+
+## 🔄 État du Radar en Direct (Mise à jour 2026-07-22)
+- **Route `/api/vols/direct`** : Ne dépend plus d'une source unique. Interroge en parallèle (`ThreadPoolExecutor`) les API communautaires (`adsb.lol` et `opendata.adsb.fi`) avec un timeout strict de 3 secondes pour garantir la fluidité du frontend Leaflet et éviter tout point de défaillance unique.
+- **Processus** : Les scripts isolés `live_radar.py` tournant en boucle (processus zombies) ont été purgés.

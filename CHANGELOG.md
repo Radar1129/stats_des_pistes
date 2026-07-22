@@ -33,3 +33,9 @@
 
 ### Modifié
 * **API Backend (`backend/api.py`)** : Route `@app.get("/api/vols/expected")` raccordée directement à la base SQLite `lfbd_schedule.db` (remplace l'ancien fichier `scraped_cache.json`).
+
+## [Unreleased] - 2026-07-22 (Suite)
+
+### Modifié
+* **API Backend (`backend/api.py`)** : Réécriture de la route `/api/vols/direct` pour respecter le cahier des charges (Bloc 1). Ajout d'une redondance via `concurrent.futures` interrogeant simultanément `adsb.lol` et `opendata.adsb.fi`.
+* **Stabilité serveur** : Nettoyage des processus zombies (`live_radar.py`) qui saturaient la mémoire et risquaient de provoquer des blocages (rate-limit) auprès des API communautaires.
