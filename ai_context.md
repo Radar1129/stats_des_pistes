@@ -387,3 +387,7 @@ La fonction `isBordeauxMovement(avion)` agit comme un filtre de mise en évidenc
 ## 🔄 État du Radar en Direct (Mise à jour 2026-07-22)
 - **Route `/api/vols/direct`** : Ne dépend plus d'une source unique. Interroge en parallèle (`ThreadPoolExecutor`) les API communautaires (`adsb.lol` et `opendata.adsb.fi`) avec un timeout strict de 3 secondes pour garantir la fluidité du frontend Leaflet et éviter tout point de défaillance unique.
 - **Processus** : Les scripts isolés `live_radar.py` tournant en boucle (processus zombies) ont été purgés.
+
+## 🔄 Architecture de Redémarrage (Mise à jour 2026-07-23)
+- **Script global (`redemarrer_backend.sh`)** : Gère désormais de façon unifiée le frontend/API et les daemons de collecte. La commande `pkill -9` cible obligatoirement `uvicorn`, `api.py`, `live_radar.py` et `detector.py` avant de tout relancer via `nohup`.
+- **Leçon apprise (Le paradoxe du Live vs Historique)** : Une alerte "Live" UI peut fonctionner parfaitement via les appels React directs, même si le backend d'enregistrement physique (`detector.py`) est mort. La présence des coches "✓ Détecté" dans le tableau dépend exclusivement de la survie du script `detector.py` et de ses écritures dans `bordeaux_stats.db`.

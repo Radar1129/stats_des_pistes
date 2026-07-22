@@ -39,3 +39,8 @@
 ### Modifié
 * **API Backend (`backend/api.py`)** : Réécriture de la route `/api/vols/direct` pour respecter le cahier des charges (Bloc 1). Ajout d'une redondance via `concurrent.futures` interrogeant simultanément `adsb.lol` et `opendata.adsb.fi`.
 * **Stabilité serveur** : Nettoyage des processus zombies (`live_radar.py`) qui saturaient la mémoire et risquaient de provoquer des blocages (rate-limit) auprès des API communautaires.
+
+## [Unreleased] - 2026-07-23
+
+### Réparé
+* **Maintenance (`redemarrer_backend.sh`)** : Résolution du bug de l'historique vide. Le script de maintenance ne relançait que l'API et laissait les moteurs radar mourir en silence. Il redémarre désormais l'intégralité de la stack (API `uvicorn` + Capteurs `live_radar.py` et `detector.py`) pour garantir l'alimentation continue de la base `bordeaux_stats.db`.
