@@ -496,7 +496,30 @@ L'algorithme isole l'avion le plus pertinent via un plafond adaptatif (1500m en 
                         <td style={{ padding: '4px 8px', textTransform: 'uppercase', textDecoration: isCancelled ? 'line-through' : 'none', color: '#444' }}>{v.ville}</td>
                         <td style={{ padding: '4px 8px', textAlign: 'right' }}>
                           {estConfirme ? (
-                            <span style={{ color: '#2ecc71', fontWeight: 'bold', fontSize: '0.95em' }}>🟢 Détection confirmée</span>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                              {v.piste && (() => {
+                                const p = String(v.piste).replace(/[^0-9]/g, '');
+                                if (!p) return null;
+                                const colors = {
+                                  '05': { bg: '#dbeafe', color: '#1e3a8a', border: '#bfdbfe' },
+                                  '23': { bg: '#ffedd5', color: '#9a3412', border: '#fed7aa' },
+                                  '11': { bg: '#dcfce7', color: '#166534', border: '#bbf7d0' },
+                                  '29': { bg: '#f3e8ff', color: '#6b21a8', border: '#e9d5ff' }
+                                };
+                                const theme = colors[p] || { bg: '#f3f4f6', color: '#1f2937', border: '#e5e7eb' };
+                                return (
+                                  <span style={{
+                                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                    backgroundColor: theme.bg, color: theme.color, border: `1px solid ${theme.border}`,
+                                    borderRadius: '12px', padding: '2px 8px', fontSize: '0.85em', fontWeight: '800',
+                                    marginRight: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                                  }}>
+                                    {p}
+                                  </span>
+                                );
+                              })()}
+                              <span style={{ color: '#2ecc71', fontWeight: 'bold', fontSize: '0.95em' }}>🟢 Détection confirmée</span>
+                            </div>
                           ) : estPreDetecte ? (
                             <span style={{ color: '#e67e22', fontWeight: 'bold', fontSize: '0.95em' }}>🟠 Pré-détecté</span>
                           ) : (
@@ -526,7 +549,7 @@ L'algorithme isole l'avion le plus pertinent via un plafond adaptatif (1500m en 
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap contributors' />
               <Polyline positions={axePiste0523} color="#3498db" weight={6} opacity={0.4} dashArray="8, 8" />
               <Polyline positions={axePiste1129} color="#e74c3c" weight={6} opacity={0.4} dashArray="8, 8" />
-              {vols.map((avion, index) => {
+        {vols.map((avion, index) => {
                 const isLocal = isBordeauxMovement(avion);
                 const isPrincipal = volLivePrincipal && (volLivePrincipal === avion || (volLivePrincipal.callsign && avion.callsign && volLivePrincipal.callsign.trim() === avion.callsign.trim()));
                 return avion.latitude && avion.longitude ? (
@@ -541,7 +564,16 @@ L'algorithme isole l'avion le plus pertinent via un plafond adaptatif (1500m en 
                   </Marker>
                 ) : null;
               })}
-            </MapContainer>
+            
+
+      
+        {/* Labels des seuils de pistes LFBD (Design HUD discret) */}
+        <Marker position={[44.8143, -0.7351]} icon={L.divIcon({ className: '', html: '<div style="background: rgba(30, 41, 59, 0.65); color: #e2e8f0; font-weight: 700; font-size: 0.75rem; padding: 2px 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(3px); text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">05</div>', iconSize: [28, 22], iconAnchor: [14, 11] })} />
+        <Marker position={[44.8373, -0.6975]} icon={L.divIcon({ className: '', html: '<div style="background: rgba(30, 41, 59, 0.65); color: #e2e8f0; font-weight: 700; font-size: 0.75rem; padding: 2px 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(3px); text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">23</div>', iconSize: [28, 22], iconAnchor: [14, 11] })} />
+        <Marker position={[44.8340, -0.7250]} icon={L.divIcon({ className: '', html: '<div style="background: rgba(30, 41, 59, 0.65); color: #e2e8f0; font-weight: 700; font-size: 0.75rem; padding: 2px 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(3px); text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">11</div>', iconSize: [28, 22], iconAnchor: [14, 11] })} />
+        <Marker position={[44.8200, -0.6990]} icon={L.divIcon({ className: '', html: '<div style="background: rgba(30, 41, 59, 0.65); color: #e2e8f0; font-weight: 700; font-size: 0.75rem; padding: 2px 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(3px); text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">29</div>', iconSize: [28, 22], iconAnchor: [14, 11] })} />
+
+      </MapContainer>
           </div>
         </div>
 
@@ -556,7 +588,7 @@ L'algorithme isole l'avion le plus pertinent via un plafond adaptatif (1500m en 
               <p style={{ color: '#999', fontSize: '0.9em', fontStyle: 'italic', textAlign: 'center', marginTop: '100px' }}>Aucun avion détecté sur la zone.</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                {vols.map((avion, index) => {
+        {vols.map((avion, index) => {
                   const isActive = volLivePrincipal && volLivePrincipal.callsign === avion.callsign;
                   const fondLigne = isActive ? '#fdf2f2' : '#fff';
                   const couleurTexte = isActive ? '#e74c3c' : '#1a73e8';
@@ -615,7 +647,29 @@ L'algorithme isole l'avion le plus pertinent via un plafond adaptatif (1500m en 
                 <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', borderBottom: '1px solid #eee', fontSize: '0.85em' }}>
                   <div>
                     <strong style={{ color: '#d32f2f' }}>{vol.callsign}</strong>
-                    <div style={{ color: '#555', marginTop: '4px' }}>{vol.action} - {vol.origine} ➔ {vol.destination}</div>
+                    <div style={{ color: '#555', marginTop: '4px', display: 'flex', alignItems: 'center' }}>
+                    {vol.piste && (() => {
+                      const p = vol.piste.replace(/[^0-9]/g, '');
+                      const colors = {
+                        '05': { bg: '#dbeafe', color: '#1e3a8a', border: '#bfdbfe' }, // Bleu
+                        '23': { bg: '#ffedd5', color: '#9a3412', border: '#fed7aa' }, // Orange
+                        '11': { bg: '#dcfce7', color: '#166534', border: '#bbf7d0' }, // Vert
+                        '29': { bg: '#f3e8ff', color: '#6b21a8', border: '#e9d5ff' }  // Violet
+                      };
+                      const theme = colors[p] || { bg: '#f3f4f6', color: '#1f2937', border: '#e5e7eb' };
+                      return (
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                          backgroundColor: theme.bg, color: theme.color, border: `1px solid ${theme.border}`,
+                          borderRadius: '12px', padding: '2px 8px', fontSize: '0.85em', fontWeight: '800',
+                          marginRight: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                        }}>
+                          {p}
+                        </span>
+                      );
+                    })()}
+                    {vol.action} - {vol.origine} ➔ {vol.destination}
+                  </div>
                   </div>
                   <div style={{ textAlign: 'right', color: '#666' }}>
                     <div>{new Date(vol.horaire).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}</div>

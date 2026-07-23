@@ -74,7 +74,8 @@ def get_vols_direct():
 def get_vols_expected():
     from datetime import datetime, timedelta
     import sqlite3
-    
+    import re
+
     try:
         try:
             import pytz
@@ -82,90 +83,134 @@ def get_vols_expected():
             now_tz = datetime.now(tz)
         except ImportError:
             now_tz = datetime.utcnow() + timedelta(hours=2)
-            
+
         today_iso = now_tz.date().isoformat()
         yesterday_iso = (now_tz - timedelta(days=1)).date().isoformat()
-        
-        # 🌙 MODE NUIT : Entre minuit et 5h, inclusion de la veille et du jour J
         is_night_mode = now_tz.hour < 5
-        
+
         db_path = "/home/ubuntu/stats_des_pistes/lfbd_schedule.db"
         stats_db_path = "/home/ubuntu/stats_des_pistes/backend/bordeaux_stats.db"
-        
+
         start_search = (now_tz - timedelta(days=2)).strftime("%Y-%m-%d 20:00:00")
         end_search = (now_tz + timedelta(days=1)).strftime("%Y-%m-%d 10:00:00")
-        
+
         detectes_raw = []
         try:
             conn_stats = sqlite3.connect(stats_db_path)
             c_stats = conn_stats.cursor()
-            c_stats.execute("SELECT callsign, horaire_passage FROM vols_detectes WHERE horaire_passage >= ? AND horaire_passage <= ?", (start_search, end_search))
-            rows_det = c_stats.fetchall()
-            for r in rows_det:
+            # On récupère ici le portail_nom pour la piste !
+            c_stats.execute("SELECT callsign, horaire_passage, action, portail_nom FROM vols_detectes WHERE horaire_passage >= ? AND horaire_passage <= ?", (start_search, end_search))
+            for r in c_stats.fetchall():
                 if r[0] and r[1]:
                     try:
                         dt_det = datetime.strptime(r[1][:19], "%Y-%m-%d %H:%M:%S")
-                        detectes_raw.append({"callsign": r[0].strip().upper(), "dt": dt_det})
+                        detectes_raw.append({"callsign": r[0].strip().upper(), "dt": dt_det, "action": r[2], "portail": r[3]})
                     except Exception:
                         pass
             conn_stats.close()
         except Exception:
             pass
-            
+
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        
+
         if is_night_mode:
-            cursor.execute('''
+            cursor.execute("""
                 SELECT scheduled_date, direction, scheduled_time, origin_dest, callsign, airline, status
                 FROM flights
                 WHERE (scheduled_date = ? AND scheduled_time >= '17:00') OR (scheduled_date = ?)
                 ORDER BY scheduled_date ASC, scheduled_time ASC
-            ''', (yesterday_iso, today_iso))
+            """, (yesterday_iso, today_iso))
         else:
-            cursor.execute('''
+            cursor.execute("""
                 SELECT scheduled_date, direction, scheduled_time, origin_dest, callsign, airline, status
                 FROM flights
                 WHERE scheduled_date = ?
                 ORDER BY scheduled_time ASC
-            ''', (today_iso,))
+            """, (today_iso,))
         rows = cursor.fetchall()
         conn.close()
+
+        CIE_MAP = {
+            "U2": ["EJU", "EZY", "EAI"], "V7": ["VOE"], "TO": ["TVF"], "FR": ["RYR"],
+            "AF": ["AFR"], "KL": ["KLM"], "BA": ["BAW", "SHT"], "SN": ["BEL"],
+            "LH": ["DLH"], "LX": ["SWR"], "AT": ["RAM"], "A5": ["HOP"], "WQ": ["SWT"]
+        }
+
+        def get_prefix(cs):
+            m = re.match(r"^([A-Z]{3}|[A-Z0-9]{2})", cs)
+            return m.group(1) if m else cs
+
+        def get_piste(portail, action):
+            if not portail: return ""
+            p = portail.replace("Portail ", "").strip()
+            if action and "decollage" in action.lower():
+                opposites = {"05": "23", "23": "05", "11": "29", "29": "11"}
+                return opposites.get(p, p)
+            return p
 
         formatted_vols = []
         for r in rows:
             prog_callsign = (r["callsign"] or "").strip().upper()
             prog_time_str = r["scheduled_time"]
             prog_date_str = r["scheduled_date"] if "scheduled_date" in r.keys() else today_iso
-                
+            expected_action = "atterrissage" if r["direction"] == "in" else "decollage"
+
             dt_prog = None
             if prog_time_str:
                 try:
                     dt_prog = datetime.strptime(f"{prog_date_str} {prog_time_str}", "%Y-%m-%d %H:%M")
                 except Exception:
                     pass
-            
+
             is_detecte = False
+            piste_detectee = ""
             prog_nums = "".join(filter(str.isdigit, prog_callsign))
-            
+            prog_prefix = get_prefix(prog_callsign)
+            expected_icaos = CIE_MAP.get(prog_prefix, [prog_prefix])
+
             if dt_prog:
                 window_start = dt_prog - timedelta(hours=3)
                 window_end = dt_prog + timedelta(hours=3)
+                best_score = 0
+                best_piste = ""
+                
                 for det in detectes_raw:
                     if window_start <= det["dt"] <= window_end:
                         det_cs = det["callsign"]
+                        det_action = det["action"]
+                        
+                        if expected_action != det_action:
+                            continue
+
+                        score = 0
                         if prog_callsign == det_cs:
-                            is_detecte = True
-                            break
-                        det_nums = "".join(filter(str.isdigit, det_cs))
-                        if prog_nums and det_nums and prog_nums == det_nums:
-                            is_detecte = True
-                            break
+                            score += 200
+                        else:
+                            det_prefix = get_prefix(det_cs)
+                            if det_prefix in expected_icaos or prog_prefix == det_prefix:
+                                score += 100
+                                det_nums = "".join(filter(str.isdigit, det_cs))
+                                
+                                if prog_nums and det_nums and prog_nums == det_nums:
+                                    score += 100
+                                elif score == 100:
+                                    time_diff = abs((det["dt"] - dt_prog).total_seconds())
+                                    score += max(0, 50 - (time_diff / 3600) * 10)
+                        
+                        if score > best_score:
+                            best_score = score
+                            best_piste = get_piste(det.get("portail", ""), det_action)
+                            
+                if best_score >= 100:
+                    is_detecte = True
+                    piste_detectee = best_piste
             else:
                 for det in detectes_raw:
                     if prog_callsign == det["callsign"]:
                         is_detecte = True
+                        piste_detectee = get_piste(det.get("portail", ""), det["action"])
                         break
 
             formatted_vols.append({
@@ -176,9 +221,10 @@ def get_vols_expected():
                 "compagnie": r["airline"],
                 "statut": r["status"],
                 "detecte": is_detecte,
+                "piste": piste_detectee,
                 "is_hier": (prog_date_str == yesterday_iso)
             })
-            
+
         return {"data": formatted_vols}
     except Exception as e:
         print(f"Erreur vols expected: {e}")
@@ -316,22 +362,33 @@ def get_vols_hors_programme():
     try:
         from datetime import datetime, timedelta
         import sqlite3
+        import re
 
-        # 1. Récupération des callsigns prévus dans lfbd_schedule.db
         conn_sched = sqlite3.connect('/home/ubuntu/stats_des_pistes/lfbd_schedule.db')
+        conn_sched.row_factory = sqlite3.Row
         c_sched = conn_sched.cursor()
         date_today = datetime.now().strftime('%Y-%m-%d')
-        c_sched.execute("SELECT callsign FROM flights WHERE scheduled_date = ?", (date_today,))
-        prevus = set(r[0].strip().upper() for r in c_sched.fetchall() if r[0])
+        # On lit aussi le sens pour ne pas confondre
+        c_sched.execute("SELECT callsign, scheduled_time, direction FROM flights WHERE scheduled_date = ?", (date_today,))
+        vols_prevus = c_sched.fetchall()
         conn_sched.close()
 
-        # 2. Récupération des détections dans bordeaux_stats.db
+        CIE_MAP = {
+            "U2": ["EJU", "EZY", "EAI"], "V7": ["VOE"], "TO": ["TVF"], "FR": ["RYR"],
+            "AF": ["AFR"], "KL": ["KLM"], "BA": ["BAW", "SHT"], "SN": ["BEL"],
+            "LH": ["DLH"], "LX": ["SWR"], "AT": ["RAM"], "A5": ["HOP"], "WQ": ["SWT"]
+        }
+
+        def get_prefix(cs):
+            m = re.match(r"^([A-Z]{3}|[A-Z0-9]{2})", cs)
+            return m.group(1) if m else cs
+
         conn_radar = sqlite3.connect('/home/ubuntu/stats_des_pistes/backend/bordeaux_stats.db')
         c_radar = conn_radar.cursor()
         date_24h_ago = (datetime.now() - timedelta(hours=24)).strftime('%Y-%m-%d %H:%M:%S')
 
         c_radar.execute("""
-            SELECT callsign, action, horaire_passage, altitude_metres, origine, destination
+            SELECT callsign, action, horaire_passage, altitude_metres, origine, destination, portail_nom
             FROM vols_detectes 
             WHERE horaire_passage >= ?
             ORDER BY horaire_passage DESC
@@ -341,9 +398,62 @@ def get_vols_hors_programme():
 
         hors_prog = []
         vus = set()
-        for callsign, action, horaire, alt, orig, dest in lignes:
+        
+        for callsign, action, horaire, alt, orig, dest, portail in lignes:
+            def get_piste(portail, action):
+                if not portail: return ""
+                p = portail.replace("Portail ", "").strip()
+                if action and "decollage" in action.lower():
+                    opposites = {"05": "23", "23": "05", "11": "29", "29": "11"}
+                    return opposites.get(p, p)
+                return p
+            
+            piste_reelle = get_piste(portail, action)
             cs = callsign.strip().upper() if callsign else ''
-            if cs and cs not in prevus and cs not in vus:
+            if not cs or cs in vus:
+                continue
+                
+            est_prevu = False
+            det_prefix = get_prefix(cs)
+            det_nums = "".join(filter(str.isdigit, cs))
+            
+            try:
+                dt_det = datetime.strptime(horaire[:19], "%Y-%m-%d %H:%M:%S")
+            except:
+                dt_det = datetime.now()
+
+            # Croisement avec le programme via la logique intelligente
+            for r in vols_prevus:
+                prog_cs = (r["callsign"] or "").strip().upper()
+                expected_action = "atterrissage" if r["direction"] == "in" else "decollage"
+                
+                if action != expected_action:
+                    continue
+                    
+                if cs == prog_cs:
+                    est_prevu = True
+                    break
+                    
+                prog_prefix = get_prefix(prog_cs)
+                expected_icaos = CIE_MAP.get(prog_prefix, [prog_prefix])
+                
+                if det_prefix in expected_icaos or prog_prefix == det_prefix:
+                    prog_nums = "".join(filter(str.isdigit, prog_cs))
+                    if prog_nums and det_nums and prog_nums == det_nums:
+                        est_prevu = True
+                        break
+                    
+                    if r["scheduled_time"]:
+                        try:
+                            dt_prog = datetime.strptime(f"{date_today} {r['scheduled_time']}", "%Y-%m-%d %H:%M")
+                            time_diff = abs((dt_det - dt_prog).total_seconds())
+                            if time_diff <= 10800: # 3 heures max
+                                est_prevu = True
+                                break
+                        except:
+                            pass
+
+            if not est_prevu:
                 vus.add(cs)
                 hors_prog.append({
                     'callsign': cs,
@@ -351,8 +461,11 @@ def get_vols_hors_programme():
                     'horaire': horaire,
                     'altitude': alt,
                     'origine': orig or 'Inconnu',
-                    'destination': dest or 'Inconnu'
+                    'destination': dest or 'Inconnu',
+                    'piste': piste_reelle
                 })
+                
         return {'status': 'success', 'data': hors_prog}
     except Exception as e:
         return {'status': 'error', 'message': str(e)}
+

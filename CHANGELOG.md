@@ -1,4 +1,15 @@
 
+## [2026-07-23] - Refonte Matching & Affichage Pistes (HUD)
+### Backend (api.py)
+* **Fix Regex** : Correction du filtre de matching IATA pour inclure les compagnies avec des chiffres (V7, U2, A5) via `r"^([A-Z]3|[A-Z0-9]2)"`.
+* **Logique Pistes** : Création de la fonction `get_piste()` pour déduire les pistes (05/23, 11/29) via les portails franchis, avec inversion automatique lors des décollages.
+* **Payload API** : Ajout de la clé `piste` dans les réponses JSON des endpoints de vols.
+
+### Frontend (App.jsx)
+* **UI Badges Pistes** : Création de pastilles dynamiques colorées (Bleu, Orange, Vert, Violet) injectées dans le Programme du Jour et l'Aviation Générale.
+* **UI Carte Radar** : Implémentation d'un design Glassmorphism (HUD aéronautique) pour placer des marqueurs statiques sur les seuils de pistes directement sur le composant React-Leaflet.
+
+
 ## [2026-07-21] - Refonte de la Pré-détection & Restructuration Frontend
 
 ### 🚀 Nouveautés & Logique Métier

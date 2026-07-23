@@ -407,3 +407,5 @@ La fonction `isBordeauxMovement(avion)` agit comme un filtre de mise en évidenc
 
 ## 🕒 Matching Temporel des Vols (Fenêtre Glissante)
 - **Tolérance $\pm 3$h** : Dans `/api/vols/expected`, le matching entre le programme et les détections radar s'effectue sur un intervalle de $\pm 3$ heures autour de l'heure théorique du vol pour garantir une correspondance exacte même en cas de fort retard ou de franchissement du cap de minuit.
+
+- **Update 2026-07-23** : Le moteur de matching gère désormais les IATA alphanumériques (ex: V7) via CIE_MAP. L'API renvoie une donnée 'piste' déduite physiquement, affichée dynamiquement par des badges colorés sur le frontend et des marqueurs HUD sur la carte.
