@@ -2307,3 +2307,291 @@ INFO:     127.0.0.1:48320 - "GET /api/vols/hors-programme?t=1784845547504 HTTP/1
 INFO:     127.0.0.1:48294 - "GET /api/vols/expected?t=1784845547504 HTTP/1.1" 200 OK
 INFO:     127.0.0.1:48310 - "GET /api/stats/pistes?t=1784845547504 HTTP/1.1" 200 OK
 INFO:     127.0.0.1:48326 - "GET /api/vols/direct?t=1784845547504 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60658 - "GET /api/score?t=1784845557507 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:60686 - "GET /api/vols/hors-programme?t=1784845557507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60664 - "GET /api/stats/pistes?t=1784845557507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60694 - "GET /api/stats/historique?periode=jour&t=1784845557507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60670 - "GET /api/vols/expected?t=1784845557507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60698 - "GET /api/vols/direct?t=1784845557507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59936 - "GET /api/score?t=1784845567501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59970 - "GET /api/stats/historique?periode=jour&t=1784845567501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59934 - "GET /api/stats/pistes?t=1784845567501 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:59946 - "GET /api/vols/expected?t=1784845567501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59958 - "GET /api/vols/hors-programme?t=1784845567501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59976 - "GET /api/vols/direct?t=1784845567501 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:38364 - "GET /api/score?t=1784845577504 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38342 - "GET /api/stats/historique?periode=jour&t=1784845577504 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38366 - "GET /api/vols/hors-programme?t=1784845577504 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38388 - "GET /api/stats/pistes?t=1784845577504 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38344 - "GET /api/vols/expected?t=1784845577504 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38390 - "GET /api/vols/direct?t=1784845577504 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53784 - "GET /api/score?t=1784845587507 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:53764 - "GET /api/stats/pistes?t=1784845587507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53740 - "GET /api/stats/historique?periode=jour&t=1784845587507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53786 - "GET /api/vols/hors-programme?t=1784845587507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53738 - "GET /api/vols/expected?t=1784845587507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53766 - "GET /api/vols/direct?t=1784845587507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35160 - "GET /api/score?t=1784845597501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35196 - "GET /api/stats/historique?periode=jour&t=1784845597501 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:35162 - "GET /api/stats/pistes?t=1784845597501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35198 - "GET /api/vols/hors-programme?t=1784845597501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35214 - "GET /api/vols/expected?t=1784845597501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35186 - "GET /api/vols/direct?t=1784845597501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35026 - "GET /api/score?t=1784845607503 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:35040 - "GET /api/stats/historique?periode=jour&t=1784845607503 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35030 - "GET /api/vols/hors-programme?t=1784845607503 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35060 - "GET /api/stats/pistes?t=1784845607503 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35042 - "GET /api/vols/expected?t=1784845607503 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35038 - "GET /api/vols/direct?t=1784845607503 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41952 - "GET /api/stats/historique?periode=jour&t=1784845617508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41966 - "GET /api/score?t=1784845617508 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:41968 - "GET /api/vols/hors-programme?t=1784845617508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41928 - "GET /api/stats/pistes?t=1784845617508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41950 - "GET /api/vols/expected?t=1784845617508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41942 - "GET /api/vols/direct?t=1784845617508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53336 - "GET /api/score?t=1784845627508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53382 - "GET /api/stats/historique?periode=jour&t=1784845627508 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:53356 - "GET /api/vols/hors-programme?t=1784845627508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53334 - "GET /api/stats/pistes?t=1784845627508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53358 - "GET /api/vols/expected?t=1784845627508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53384 - "GET /api/vols/direct?t=1784845627508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58088 - "GET /api/score?t=1784845637501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58086 - "GET /api/stats/pistes?t=1784845637501 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:58066 - "GET /api/stats/historique?periode=jour&t=1784845637501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58052 - "GET /api/vols/hors-programme?t=1784845637501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58046 - "GET /api/vols/expected?t=1784845637501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58076 - "GET /api/vols/direct?t=1784845637501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45418 - "GET /api/stats/historique?periode=jour&t=1784845647508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45420 - "GET /api/score?t=1784845647508 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:45410 - "GET /api/vols/hors-programme?t=1784845647508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45398 - "GET /api/vols/expected?t=1784845647508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45400 - "GET /api/stats/pistes?t=1784845647508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45408 - "GET /api/vols/direct?t=1784845647508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:32972 - "GET /api/score?t=1784845657501 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:32946 - "GET /api/stats/pistes?t=1784845657501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:32984 - "GET /api/stats/historique?periode=jour&t=1784845657501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:32970 - "GET /api/vols/hors-programme?t=1784845657501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:32944 - "GET /api/vols/expected?t=1784845657501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:32982 - "GET /api/vols/direct?t=1784845657501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47120 - "GET /api/score?t=1784845667504 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:47104 - "GET /api/stats/pistes?t=1784845667504 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47148 - "GET /api/stats/historique?periode=jour&t=1784845667504 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47142 - "GET /api/vols/hors-programme?t=1784845667504 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47134 - "GET /api/vols/expected?t=1784845667504 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47102 - "GET /api/vols/direct?t=1784845667504 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47548 - "GET /api/score?t=1784845677507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47502 - "GET /api/stats/pistes?t=1784845677507 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:47518 - "GET /api/stats/historique?periode=jour&t=1784845677507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47528 - "GET /api/vols/expected?t=1784845677507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47560 - "GET /api/vols/hors-programme?t=1784845677507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47532 - "GET /api/vols/direct?t=1784845677507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51484 - "GET /api/score?t=1784845687500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51502 - "GET /api/stats/pistes?t=1784845687500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51510 - "GET /api/stats/historique?periode=jour&t=1784845687500 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:51490 - "GET /api/vols/expected?t=1784845687500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51504 - "GET /api/vols/hors-programme?t=1784845687500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51512 - "GET /api/vols/direct?t=1784845687500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34930 - "GET /api/score?t=1784845697505 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:34964 - "GET /api/stats/pistes?t=1784845697505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34970 - "GET /api/stats/historique?periode=jour&t=1784845697505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34946 - "GET /api/vols/expected?t=1784845697505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34932 - "GET /api/vols/hors-programme?t=1784845697505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34948 - "GET /api/vols/direct?t=1784845697505 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:48192 - "GET /api/stats/pistes?t=1784845707508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48220 - "GET /api/stats/historique?periode=jour&t=1784845707508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48236 - "GET /api/score?t=1784845707508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48176 - "GET /api/vols/hors-programme?t=1784845707508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48194 - "GET /api/vols/expected?t=1784845707508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48178 - "GET /api/vols/direct?t=1784845707508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43976 - "GET /api/score?t=1784845717501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43968 - "GET /api/stats/historique?periode=jour&t=1784845717501 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:43928 - "GET /api/stats/pistes?t=1784845717501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43948 - "GET /api/vols/expected?t=1784845717501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43930 - "GET /api/vols/hors-programme?t=1784845717501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43946 - "GET /api/vols/direct?t=1784845717501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51410 - "GET /api/score?t=1784845727504 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:51442 - "GET /api/stats/historique?periode=jour&t=1784845727504 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51408 - "GET /api/stats/pistes?t=1784845727504 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51436 - "GET /api/vols/expected?t=1784845727504 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51434 - "GET /api/vols/hors-programme?t=1784845727504 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51428 - "GET /api/vols/direct?t=1784845727504 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41474 - "GET /api/score?t=1784845737508 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:41446 - "GET /api/stats/historique?periode=jour&t=1784845737508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41472 - "GET /api/stats/pistes?t=1784845737508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41424 - "GET /api/vols/hors-programme?t=1784845737508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41444 - "GET /api/vols/expected?t=1784845737508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41426 - "GET /api/vols/direct?t=1784845737508 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37626 - "GET /api/score?t=1784845747502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37606 - "GET /api/stats/pistes?t=1784845747502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37604 - "GET /api/vols/hors-programme?t=1784845747502 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:37650 - "GET /api/stats/historique?periode=jour&t=1784845747502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37622 - "GET /api/vols/expected?t=1784845747502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37640 - "GET /api/vols/direct?t=1784845747502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51100 - "GET /api/score?t=1784845757505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51088 - "GET /api/stats/pistes?t=1784845757505 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:51090 - "GET /api/stats/historique?periode=jour&t=1784845757505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51102 - "GET /api/vols/expected?t=1784845757505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51116 - "GET /api/vols/hors-programme?t=1784845757505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51122 - "GET /api/vols/direct?t=1784845757505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42552 - "GET /api/score?t=1784845767507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42568 - "GET /api/stats/historique?periode=jour&t=1784845767507 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:42590 - "GET /api/stats/pistes?t=1784845767507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42554 - "GET /api/vols/hors-programme?t=1784845767507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42570 - "GET /api/vols/expected?t=1784845767507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42580 - "GET /api/vols/direct?t=1784845767507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59540 - "GET /api/score?t=1784845777502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59524 - "GET /api/stats/historique?periode=jour&t=1784845777502 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:59552 - "GET /api/stats/pistes?t=1784845777502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59568 - "GET /api/vols/expected?t=1784845777502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59554 - "GET /api/vols/hors-programme?t=1784845777502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59566 - "GET /api/vols/direct?t=1784845777502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33710 - "GET /api/score?t=1784845787505 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:33678 - "GET /api/stats/historique?periode=jour&t=1784845787505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33726 - "GET /api/stats/pistes?t=1784845787505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33672 - "GET /api/vols/hors-programme?t=1784845787505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33674 - "GET /api/vols/expected?t=1784845787505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33694 - "GET /api/vols/direct?t=1784845787505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46158 - "GET /api/score?t=1784845797509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46160 - "GET /api/stats/historique?periode=jour&t=1784845797509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46180 - "GET /api/vols/hors-programme?t=1784845797509 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:46200 - "GET /api/stats/pistes?t=1784845797509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46178 - "GET /api/vols/expected?t=1784845797509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46216 - "GET /api/vols/direct?t=1784845797509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54914 - "GET /api/score?t=1784845807501 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:54928 - "GET /api/stats/historique?periode=jour&t=1784845807501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54940 - "GET /api/stats/pistes?t=1784845807501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54926 - "GET /api/vols/hors-programme?t=1784845807501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54948 - "GET /api/vols/expected?t=1784845807501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54916 - "GET /api/vols/direct?t=1784845807501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44558 - "GET /api/score?t=1784845817506 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44562 - "GET /api/stats/historique?periode=jour&t=1784845817506 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:44556 - "GET /api/stats/pistes?t=1784845817506 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44604 - "GET /api/vols/hors-programme?t=1784845817506 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44564 - "GET /api/vols/expected?t=1784845817506 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44588 - "GET /api/vols/direct?t=1784845817506 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33150 - "GET /api/score?t=1784845827509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33160 - "GET /api/stats/historique?periode=jour&t=1784845827509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33156 - "GET /api/vols/hors-programme?t=1784845827509 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:33166 - "GET /api/stats/pistes?t=1784845827509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33148 - "GET /api/vols/expected?t=1784845827509 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.adsb.lol/v2/lat/44.8283/lon/-0.7156/dist/15): HTTP Error 429: Too Many Requests
+INFO:     127.0.0.1:33152 - "GET /api/vols/direct?t=1784845827509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42228 - "GET /api/score?t=1784845837502 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:42182 - "GET /api/stats/historique?periode=jour&t=1784845837502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42174 - "GET /api/stats/pistes?t=1784845837502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42212 - "GET /api/vols/hors-programme?t=1784845837502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42176 - "GET /api/vols/expected?t=1784845837502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42198 - "GET /api/vols/direct?t=1784845837502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47128 - "GET /api/score?t=1784845847502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47132 - "GET /api/stats/historique?periode=jour&t=1784845847502 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:47138 - "GET /api/stats/pistes?t=1784845847502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47118 - "GET /api/vols/expected?t=1784845847502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47144 - "GET /api/vols/hors-programme?t=1784845847502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47142 - "GET /api/vols/direct?t=1784845847502 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:41524 - "GET /api/score?t=1784845857500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41538 - "GET /api/stats/historique?periode=jour&t=1784845857500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41562 - "GET /api/stats/pistes?t=1784845857500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41546 - "GET /api/vols/expected?t=1784845857500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41558 - "GET /api/vols/hors-programme?t=1784845857500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41514 - "GET /api/vols/direct?t=1784845857500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45002 - "GET /api/score?t=1784845867501 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:45008 - "GET /api/stats/historique?periode=jour&t=1784845867501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44978 - "GET /api/stats/pistes?t=1784845867501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44960 - "GET /api/vols/hors-programme?t=1784845867501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44958 - "GET /api/vols/expected?t=1784845867501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44980 - "GET /api/vols/direct?t=1784845867501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43518 - "GET /api/score?t=1784845877505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43532 - "GET /api/stats/historique?periode=jour&t=1784845877505 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:43516 - "GET /api/stats/pistes?t=1784845877505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43524 - "GET /api/vols/hors-programme?t=1784845877505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43526 - "GET /api/vols/expected?t=1784845877505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43546 - "GET /api/vols/direct?t=1784845877505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42094 - "GET /api/score?t=1784845887500 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:42124 - "GET /api/stats/pistes?t=1784845887500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42104 - "GET /api/vols/hors-programme?t=1784845887500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42098 - "GET /api/stats/historique?periode=jour&t=1784845887500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42106 - "GET /api/vols/expected?t=1784845887500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42122 - "GET /api/vols/direct?t=1784845887500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41298 - "GET /api/score?t=1784845897501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41322 - "GET /api/stats/historique?periode=jour&t=1784845897501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41270 - "GET /api/stats/pistes?t=1784845897501 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:41268 - "GET /api/vols/expected?t=1784845897501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41320 - "GET /api/vols/hors-programme?t=1784845897501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41296 - "GET /api/vols/direct?t=1784845897501 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47196 - "GET /api/score?t=1784845907507 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:47180 - "GET /api/vols/hors-programme?t=1784845907507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47194 - "GET /api/stats/pistes?t=1784845907507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47230 - "GET /api/stats/historique?periode=jour&t=1784845907507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47178 - "GET /api/vols/expected?t=1784845907507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47226 - "GET /api/vols/direct?t=1784845907507 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52292 - "GET /api/stats/pistes?t=1784845917509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52350 - "GET /api/score?t=1784845917509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52320 - "GET /api/stats/historique?periode=jour&t=1784845917509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52322 - "GET /api/vols/hors-programme?t=1784845917509 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:52310 - "GET /api/vols/expected?t=1784845917509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52308 - "GET /api/vols/direct?t=1784845917509 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55414 - "GET /api/score?t=1784845927502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55412 - "GET /api/stats/historique?periode=jour&t=1784845927502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55456 - "GET /api/stats/pistes?t=1784845927502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55454 - "GET /api/vols/hors-programme?t=1784845927502 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:55438 - "GET /api/vols/expected?t=1784845927502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55464 - "GET /api/vols/direct?t=1784845927502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49570 - "GET /api/score?t=1784845937505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49578 - "GET /api/stats/pistes?t=1784845937505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49594 - "GET /api/stats/historique?periode=jour&t=1784845937505 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:49572 - "GET /api/vols/hors-programme?t=1784845937505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49560 - "GET /api/vols/expected?t=1784845937505 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49562 - "GET /api/vols/direct?t=1784845937505 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:59452 - "GET /api/score?t=1784845947500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59470 - "GET /api/stats/historique?periode=jour&t=1784845947500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59438 - "GET /api/stats/pistes?t=1784845947500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59482 - "GET /api/vols/hors-programme?t=1784845947500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59456 - "GET /api/vols/expected?t=1784845947500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59430 - "GET /api/vols/direct?t=1784845947500 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37954 - "GET /api/score?t=1784845957502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37942 - "GET /api/stats/pistes?t=1784845957502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37970 - "GET /api/stats/historique?periode=jour&t=1784845957502 HTTP/1.1" 200 OK
+Erreur API Radar (https://api.opendata.adsb.fi/api/v2/lat/44.8283/lon/-0.7156/dist/15): <urlopen error [Errno -2] Name or service not known>
+INFO:     127.0.0.1:38012 - "GET /api/vols/hors-programme?t=1784845957502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37986 - "GET /api/vols/expected?t=1784845957502 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37998 - "GET /api/vols/direct?t=1784845957502 HTTP/1.1" 200 OK

@@ -413,3 +413,11 @@ La fonction `isBordeauxMovement(avion)` agit comme un filtre de mise en évidenc
 ## Note d'architecture (2026-07-24)
 - **Règle métier altitude** : La qualification d'atterrissage se fait sous 1500 ft (`alt < 1500`).
 - **Supervision** : Utiliser EXCLUSIVEMENT `sudo systemctl status/restart live_radar.service`. Ne pas lancer via `pm2` ni `nohup` manuel sous peine de créer des doublons d'écriture SQLite.
+
+---
+## 📜 PROTOCOLE DE FIN DE SESSION ET DOCUMENTATION (OBLIGATOIRE)
+À la fin de chaque résolution de problème ou fonctionnalité ajoutée :
+1. **Inspection automatique :** L'IA doit identifier elle-même les fichiers modifiés (`git status`, `git diff`).
+2. **Mise à jour de CHANGELOG.md :** Rédiger les entrées sous le bon format (Modifié, Ajouté, Supprimé).
+3. **Mise à jour de ai_context.md :** Consigner les décisions d'architecture ou règles techniques majeures.
+4. **Sauvegarde Git :** Proposer ou exécuter la séquence `git add`, `git commit` (avec message conventionnel) et `git push origin main`.
