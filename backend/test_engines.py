@@ -24,7 +24,7 @@ def test_qualify_phase():
     assert qualify_phase(0, 50, 20, "ARRIVEE") == "ROULAGE / SOL"
     
     # 2. Priorité Programme Aérovision (écrase la télémétrie V/S)
-    assert qualify_phase(-50, 200, 140, "ARRIVEE") == "EN APPROCHE"
+    assert qualify_phase(-50, 2000, 140, "ARRIVEE") == "EN APPROCHE"
     assert qualify_phase(-50, 50, 130, "ARRIVEE") == "ATTERRISSAGE"
     assert qualify_phase(-1200, 1500, 150, "DEPART") == "DÉCOLLAGE" # Le programme prime
     

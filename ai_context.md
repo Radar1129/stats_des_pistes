@@ -409,3 +409,7 @@ La fonction `isBordeauxMovement(avion)` agit comme un filtre de mise en évidenc
 - **Tolérance $\pm 3$h** : Dans `/api/vols/expected`, le matching entre le programme et les détections radar s'effectue sur un intervalle de $\pm 3$ heures autour de l'heure théorique du vol pour garantir une correspondance exacte même en cas de fort retard ou de franchissement du cap de minuit.
 
 - **Update 2026-07-23** : Le moteur de matching gère désormais les IATA alphanumériques (ex: V7) via CIE_MAP. L'API renvoie une donnée 'piste' déduite physiquement, affichée dynamiquement par des badges colorés sur le frontend et des marqueurs HUD sur la carte.
+
+## Note d'architecture (2026-07-24)
+- **Règle métier altitude** : La qualification d'atterrissage se fait sous 1500 ft (`alt < 1500`).
+- **Supervision** : Utiliser EXCLUSIVEMENT `sudo systemctl status/restart live_radar.service`. Ne pas lancer via `pm2` ni `nohup` manuel sous peine de créer des doublons d'écriture SQLite.

@@ -43,7 +43,7 @@ def qualify_phase(vertical_rate, altitude, speed_kts, schedule_type=None):
         return "ROULAGE / SOL"
 
     if "ARRIV" in st or "LANDING" in st:
-        return "ATTERRISSAGE" if alt < 100 else "EN APPROCHE"
+        return "ATTERRISSAGE" if alt < 1500 else "EN APPROCHE"
     if "DEP" in st or "TAKE" in st:
         return "DÉCOLLAGE"
 

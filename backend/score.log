@@ -33,3 +33,9 @@ Traceback (most recent call last):
     )
     ^
 sqlite3.OperationalError: no such table: scores_verification
+/home/ubuntu/stats_des_pistes/backend/generate_score.py:9: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  yesterday_str = (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d")
+[-] Pas de données Aérovision pour le 2026-07-21.
+/home/ubuntu/stats_des_pistes/backend/generate_score.py:9: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  yesterday_str = (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d")
+[-] Pas de données Aérovision pour le 2026-07-22.

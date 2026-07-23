@@ -68,3 +68,15 @@
 
 ### Corrigé
 * **API Backend (`backend/api.py`)** : Implémentation d'une fenêtre glissante de $\pm 3$ heures sur la route `/api/vols/expected`. Résolution du problème des vols de nuit à cheval sur minuit : un vol prévu à 23h50 et détecté à 00h15 est désormais correctement associé et comptabilisé.
+
+## [2026-07-24] - Correctif Capture Radar & Stabilisation Infrastructure
+### Modifié
+- **Seuil d'atterrissage** : Alignement à `alt < 1500` ft (au lieu de 100 ft) dans `live_radar.py`, `flight_engine.py` et `deploy_engine.py` pour éliminer le trou noir de détection au sol.
+- **Tests unitaires** : Remontée du plafond de test "EN APPROCHE" à 2000 ft dans `test_engines.py`.
+
+### Supprimé / Nettoyé
+- **PM2** : Suppression du processus `collecteur-radar` pour éviter l'exécutions en double et les surcharges CPU.
+- **Base de données** : Purge SQL des doublons créés par la concurrence de processus sur la journée du 2026-07-23.
+
+### Infrastructure
+- Unification de la supervision sous **Systemd** (`live_radar.service`).
