@@ -25,7 +25,14 @@ class LoginData(BaseModel):
 
 @app.post("/api/login")
 def login(data: LoginData):
-    if data.username in ["radar2026", "avion33", "famille", "bordeaux"] and data.password in ["radar2026", "avion33", "famille", "bordeaux"]:
+    comptes_autorises = {
+        "admin": "Radar2026",
+        "crews95": "Radar-1129",
+        "potei": "avion33",
+        "famille": "bordeaux",
+        "radar2026": "radar2026"
+    }
+    if data.username in comptes_autorises and comptes_autorises[data.username] == data.password:
         return {"status": "success", "token": "token_valide_12345"}
     raise HTTPException(status_code=401, detail="Identifiants incorrects")
 
