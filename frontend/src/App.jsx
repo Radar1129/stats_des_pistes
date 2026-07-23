@@ -567,11 +567,13 @@ L'algorithme isole l'avion le plus pertinent via un plafond adaptatif (1500m en 
             
 
       
-        {/* Labels des seuils de pistes LFBD (Design HUD discret) */}
-        <Marker position={[44.8143, -0.7351]} icon={L.divIcon({ className: '', html: '<div style="background: rgba(30, 41, 59, 0.65); color: #e2e8f0; font-weight: 700; font-size: 0.75rem; padding: 2px 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(3px); text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">05</div>', iconSize: [28, 22], iconAnchor: [14, 11] })} />
-        <Marker position={[44.8373, -0.6975]} icon={L.divIcon({ className: '', html: '<div style="background: rgba(30, 41, 59, 0.65); color: #e2e8f0; font-weight: 700; font-size: 0.75rem; padding: 2px 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(3px); text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">23</div>', iconSize: [28, 22], iconAnchor: [14, 11] })} />
-        <Marker position={[44.8340, -0.7250]} icon={L.divIcon({ className: '', html: '<div style="background: rgba(30, 41, 59, 0.65); color: #e2e8f0; font-weight: 700; font-size: 0.75rem; padding: 2px 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(3px); text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">11</div>', iconSize: [28, 22], iconAnchor: [14, 11] })} />
-        <Marker position={[44.8200, -0.6990]} icon={L.divIcon({ className: '', html: '<div style="background: rgba(30, 41, 59, 0.65); color: #e2e8f0; font-weight: 700; font-size: 0.75rem; padding: 2px 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(3px); text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">29</div>', iconSize: [28, 22], iconAnchor: [14, 11] })} />
+
+      
+        {/* Labels des axes d'approche (Design épuré cartographique) */}
+        <Marker position={[44.6800, -0.9500]} icon={L.divIcon({ className: '', html: '<div style="color: #2563eb; font-weight: 900; font-size: 1.2rem; text-shadow: 2px 0 4px #fff, -2px 0 4px #fff, 0 2px 4px #fff, 0 -2px 4px #fff, 1px 1px 0 #fff, -1px -1px 0 #fff; text-align: center; background: transparent;">05</div>', iconSize: [30, 30], iconAnchor: [15, 15] })} />
+        <Marker position={[44.9800, -0.4500]} icon={L.divIcon({ className: '', html: '<div style="color: #2563eb; font-weight: 900; font-size: 1.2rem; text-shadow: 2px 0 4px #fff, -2px 0 4px #fff, 0 2px 4px #fff, 0 -2px 4px #fff, 1px 1px 0 #fff, -1px -1px 0 #fff; text-align: center; background: transparent;">23</div>', iconSize: [30, 30], iconAnchor: [15, 15] })} />
+        <Marker position={[44.9400, -0.8800]} icon={L.divIcon({ className: '', html: '<div style="color: #dc2626; font-weight: 900; font-size: 1.2rem; text-shadow: 2px 0 4px #fff, -2px 0 4px #fff, 0 2px 4px #fff, 0 -2px 4px #fff, 1px 1px 0 #fff, -1px -1px 0 #fff; text-align: center; background: transparent;">11</div>', iconSize: [30, 30], iconAnchor: [15, 15] })} />
+        <Marker position={[44.7500, -0.5200]} icon={L.divIcon({ className: '', html: '<div style="color: #dc2626; font-weight: 900; font-size: 1.2rem; text-shadow: 2px 0 4px #fff, -2px 0 4px #fff, 0 2px 4px #fff, 0 -2px 4px #fff, 1px 1px 0 #fff, -1px -1px 0 #fff; text-align: center; background: transparent;">29</div>', iconSize: [30, 30], iconAnchor: [15, 15] })} />
 
       </MapContainer>
           </div>
